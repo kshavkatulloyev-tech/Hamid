@@ -55,7 +55,7 @@
         <div class="svc-text">ТЕКАР терапияси</div>
       </div>
     </div>
-    <div id="svc-badge" class="clip" data-start="6.2" data-duration="2.4">
+    <div id="svc-badge" class="clip" data-start="5.8" data-duration="2.8">
       <div id="svc-num">50+</div>
       <div id="svc-num-label">физиотерапия<br />усуллари</div>
     </div>
@@ -63,15 +63,15 @@
   <script>
     const tl = gsap.timeline({ paused: true });
     tl.fromTo("#svc-title", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, 0);
-    const starts = [0.35, 1.5, 2.3, 3.05, 4.1];
+    const starts = [0.4, 1.6, 2.32, 3.05, 3.88];
     starts.forEach((t, i) => {
       tl.fromTo("#svc-c" + (i + 1), { opacity: 0, x: 120 }, { opacity: 1, x: 0, duration: 0.45, ease: "power3.out" }, t);
       tl.fromTo("#svc-c" + (i + 1) + " .svc-icon", { scale: 0.4 }, { scale: 1, duration: 0.5, ease: "back.out(2)" }, t + 0.1);
     });
-    tl.to("#svc-c1, #svc-c2, #svc-c3, #svc-c4, #svc-c5", { opacity: 0, y: -40, duration: 0.3, ease: "power2.in", stagger: 0.03 }, 5.85);
-    tl.to("#svc-title", { opacity: 0, duration: 0.25 }, 5.9);
-    tl.fromTo("#svc-num", { scale: 0.3, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.8)" }, 6.25);
-    tl.fromTo("#svc-num-label", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, 6.55);
+    tl.to("#svc-c1, #svc-c2, #svc-c3, #svc-c4, #svc-c5", { opacity: 0, y: -40, duration: 0.3, ease: "power2.in", stagger: 0.03 }, 5.45);
+    tl.to("#svc-title", { opacity: 0, duration: 0.25 }, 5.5);
+    tl.fromTo("#svc-num", { scale: 0.3, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.8)" }, 5.85);
+    tl.fromTo("#svc-num-label", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, 6.15);
     tl.to("#svc-badge", { opacity: 0, duration: 0.25, ease: "power2.in" }, 8.3);
     window.__timelines["services"] = tl;
   </script>

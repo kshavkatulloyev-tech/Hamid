@@ -1,9 +1,9 @@
 ◆  Checking clinic-promo-01
-[hyperframes] check: the report is saved to /home/user/Hamid/clinic-promo-01/.hyperframes/artifacts/checks/2597331c-c15a-4b3b-80f0-43e11ca685d2.json when the check ends, unless a warning says it could not be saved
-[hyperframes] browserGpuMode probe → software (WebGL unavailable)
+[hyperframes] check: the report is saved to /home/user/Hamid/clinic-promo-01/.hyperframes/artifacts/checks/1e88433a-48ce-49b9-9801-a064b49188e3.json when the check ends, unless a warning says it could not be saved
 [INFO] [Compiler] Fetched 11 font face(s) for "Montserrat" from Google Fonts (cached to /root/.cache/hyperframes/fonts/montserrat)
 [INFO] [Compiler] Injected deterministic @font-face rules for 1 requested font families
 [hyperframes] check: starting Chrome
+[hyperframes] browserGpuMode probe → software (WebGL unavailable)
 [hyperframes] check: loading the page
 [hyperframes] check: waiting for the page to be ready
 [hyperframes] check: checking samples
@@ -304,7 +304,9 @@ Lint
   0 error(s), 2 warning(s), 0 info(s)
 
 Runtime
-  ◇ 0 errors, 0 warnings
+  ⚠ clip_media_fit: Audio "vo5" is 2.88s but its slot (data-duration) is 2.93s — the slot is shortened to the media length when rendered. Set data-duration to ~2.88s if that isn't intended.
+    index.html [data-composition-id] t=0s
+  0 error(s), 1 warning(s), 0 info(s)
 
 Layout
   ⚠ t=1.722, 5.167, 8.611, 12.056, 15.5, 22.389, 25.833s outside_safe_zone #captions "Бел ёки бўйин оғриғи" — <div> "Бел ёки бўйин оғриғи" is outside the safe area: TikTok (right edge).
@@ -323,11 +325,7 @@ Motion
   ◇ 0 errors, 0 warnings
 
 Contrast
-  ⚠ #cap-g3-w0 "замонавий" 1.68:1 (need 3:1, t=8.611s)
-    Try rgb(95,76,9); source compositions/captions.html
-  ⚠ #cap-g3-w1 "физиотерапия" 1.68:1 (need 3:1, t=8.611s)
-    Try rgb(95,76,9); source compositions/captions.html
-  0 error(s), 2 warning(s), 0 info(s)
+  ◇ 30/30 text checks pass WCAG AA
 
 Craft
   ◇ 0 errors, 0 warnings
@@ -339,5 +337,5 @@ Snapshots
   ◇ disabled
 
 ◇  Check passed
-Report: /home/user/Hamid/clinic-promo-01/.hyperframes/artifacts/checks/2597331c-c15a-4b3b-80f0-43e11ca685d2.json
-Revision: 58222845-12c7-4d9c-8be3-3eac624a4217 (recorded-revision)
+Report: /home/user/Hamid/clinic-promo-01/.hyperframes/artifacts/checks/1e88433a-48ce-49b9-9801-a064b49188e3.json
+Revision: 0e1938fe-d175-4356-903f-df012f7f8d9f (recorded-revision)
