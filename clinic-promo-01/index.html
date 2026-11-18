@@ -1,0 +1,98 @@
+<!doctype html>
+<html
+  lang="uz"
+  data-composition-variables='[
+    {"id":"phone","type":"string","label":"Телефон","default":"+998 93 963 10 95"},
+    {"id":"address","type":"string","label":"Манзил","default":"Бухоро вилояти, Вобкент тумани"},
+    {"id":"telegram","type":"string","label":"Telegram","default":"t.me/HabibulloShams"},
+    {"id":"blue","type":"color","label":"Тўқ кўк","default":"#0B3D91"},
+    {"id":"green","type":"color","label":"Яшил","default":"#3BA935"},
+    {"id":"sky","type":"color","label":"Фон","default":"#D6EAF8"},
+    {"id":"yellow","type":"color","label":"Урғу","default":"#F5C518"}
+  ]'
+>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+    <style>
+      :root {
+        --blue: #0b3d91;
+        --green: #3ba935;
+        --sky: #d6eaf8;
+        --yellow: #f5c518;
+        --ink: #0b3d91;
+        --font-display: "Montserrat", sans-serif;
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body {
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+        background: var(--sky);
+      }
+      #root {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        font-family: var(--font-display);
+      }
+      #bg {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(120% 80% at 50% 30%, #ffffff 0%, var(--sky) 55%, #b9d8f0 100%);
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="31"
+      data-width="1080"
+      data-height="1920"
+    >
+      <div id="bg"></div>
+      <svg id="waves" class="clip" data-start="0" data-duration="31" data-track-index="0" data-layout-ignore
+        width="1080" height="560" viewBox="0 0 1080 560" style="position:absolute;left:0;top:1360px">
+        <path id="wave1" d="M-200 120 C 80 40 280 200 540 120 S 1000 40 1280 120 L1280 560 L-200 560 Z" fill="#3ba935" opacity="0.18" />
+        <path id="wave2" d="M-200 200 C 60 120 320 280 560 200 S 1020 120 1280 200 L1280 560 L-200 560 Z" fill="#0b3d91" opacity="0.14" />
+        <path id="wave3" d="M-200 300 C 100 220 300 380 560 300 S 980 220 1280 300 L1280 560 L-200 560 Z" fill="#0b3d91" opacity="0.22" />
+      </svg>
+
+      <div id="hook" data-composition-id="hook" data-composition-src="compositions/hook.html"
+        data-start="0" data-duration="4.2" data-track-index="1" data-track-kind="graphics"
+        data-width="1080" data-height="1920"></div>
+      <div id="brand" data-composition-id="brand" data-composition-src="compositions/brand.html"
+        data-start="4.2" data-duration="6.4" data-track-index="1" data-track-kind="graphics"
+        data-width="1080" data-height="1920"></div>
+      <div id="services" data-composition-id="services" data-composition-src="compositions/services.html"
+        data-start="10.6" data-duration="8.6" data-track-index="1" data-track-kind="graphics"
+        data-width="1080" data-height="1920"></div>
+      <div id="care" data-composition-id="care" data-composition-src="compositions/care.html"
+        data-start="19.2" data-duration="4.8" data-track-index="1" data-track-kind="graphics"
+        data-width="1080" data-height="1920"></div>
+      <div id="endcard" data-composition-id="endcard" data-composition-src="compositions/endcard.html"
+        data-start="24" data-duration="7" data-track-index="1" data-track-kind="graphics"
+        data-width="1080" data-height="1920"></div>
+
+      <div id="captions" data-composition-id="captions" data-composition-src="compositions/captions.html"
+        data-start="0" data-duration="31" data-track-index="2" data-track-kind="captions"
+        data-width="1080" data-height="1920"></div>
+
+      <audio id="vo1" class="clip" src="assets/audio/vo1.mp3" data-start="0.3" data-duration="3.71" data-track-index="3" data-volume="1"></audio>
+      <audio id="vo2" class="clip" src="assets/audio/vo2.mp3" data-start="4.5" data-duration="5.8" data-track-index="3" data-volume="1"></audio>
+      <audio id="vo3" class="clip" src="assets/audio/vo3.mp3" data-start="10.9" data-duration="7.71" data-track-index="3" data-volume="1"></audio>
+      <audio id="vo4" class="clip" src="assets/audio/vo4.mp3" data-start="19.4" data-duration="4.13" data-track-index="3" data-volume="1"></audio>
+      <audio id="vo5" class="clip" src="assets/audio/vo5.mp3" data-start="24.4" data-duration="2.77" data-track-index="3" data-volume="1"></audio>
+    </div>
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      tl.fromTo("#wave1", { x: 0 }, { x: -140, duration: 31, ease: "sine.inOut" }, 0);
+      tl.fromTo("#wave2", { x: -120 }, { x: 60, duration: 31, ease: "sine.inOut" }, 0);
+      tl.fromTo("#wave3", { x: 0 }, { x: -90, duration: 31, ease: "sine.inOut" }, 0);
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

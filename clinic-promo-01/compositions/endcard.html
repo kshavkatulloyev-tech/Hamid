@@ -1,0 +1,62 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; font-family: "Montserrat", sans-serif; }
+    #end-name {
+      position: absolute; left: 120px; right: 120px; top: 300px; text-align: center; white-space: nowrap;
+      color: #0b3d91; font-weight: 900; font-size: 78px; line-height: 1.02;
+    }
+    #end-name small { display: block; font-size: 54px; font-weight: 800; color: #24801f; margin-top: 6px; }
+    #end-slogan {
+      position: absolute; left: 120px; right: 120px; top: 478px; text-align: center;
+      color: #0b3d91; font-weight: 700; font-style: italic; font-size: 48px;
+    }
+    #end-panel {
+      position: absolute; left: 120px; right: 120px; top: 580px; height: 330px;
+      background: #0b3d91; border-radius: 36px; padding: 30px 32px;
+      display: flex; flex-direction: column; justify-content: space-between;
+    }
+    .end-row { display: flex; align-items: center; gap: 22px; color: #ffffff; font-weight: 700; font-size: 34px; }
+    .end-ic { flex: 0 0 68px; width: 68px; height: 68px; border-radius: 50%; background: #3ba935; display: flex; align-items: center; justify-content: center; }
+    #end-cta-wrap { position: absolute; left: 120px; right: 120px; top: 940px; text-align: center; }
+    #end-cta {
+      display: inline-block; padding: 22px 60px; border-radius: 80px;
+      background: #f5c518; color: #0b3d91; font-weight: 900; font-size: 50px;
+      box-shadow: 0 14px 34px rgba(245, 197, 24, 0.5);
+    }
+    #end-note {
+      position: absolute; left: 120px; right: 120px; top: 1080px; text-align: center;
+      color: #0b3d91; font-weight: 600; font-size: 28px;
+    }
+  </style>
+  <div id="root" data-composition-id="endcard" data-width="1080" data-height="1920">
+    <h1 id="end-name" class="clip" data-start="0" data-duration="7">Ҳабибулло Шамс<small>клиникаси</small></h1>
+    <p id="end-slogan" class="clip" data-start="0" data-duration="7">«Жонга шифо ҳам оро!»</p>
+    <div id="end-panel" class="clip" data-start="0" data-duration="7">
+      <div id="end-r1" class="end-row">
+        <div class="end-ic"><svg width="40" height="40" viewBox="0 0 40 40" fill="#fff"><path d="M20 3 a12 12 0 0 1 12 12 c0 9 -12 22 -12 22 s-12 -13 -12 -22 a12 12 0 0 1 12 -12 z m0 7 a5 5 0 1 0 0.01 0 z"/></svg></div>
+        <span data-var-text="address">Бухоро вилояти, Вобкент тумани</span>
+      </div>
+      <div id="end-r2" class="end-row">
+        <div class="end-ic"><svg width="40" height="40" viewBox="0 0 40 40" fill="#fff"><path d="M10 4 l6 0 l3 9 l-4 3 c2 5 5 8 10 10 l3 -4 l9 3 l0 6 c0 3 -2 5 -5 5 c-17 -1 -30 -14 -31 -31 c0 -3 2 -5 5 -5 z"/></svg></div>
+        <span data-var-text="phone">+998 93 963 10 95</span>
+      </div>
+      <div id="end-r3" class="end-row">
+        <div class="end-ic"><svg width="40" height="40" viewBox="0 0 40 40" fill="#fff"><path d="M4 19 l30 -12 c2 -1 3 1 3 2 l-5 24 c-1 2 -2 2 -4 1 l-8 -6 l-4 4 c-1 1 -2 0 -2 -1 l0 -6 l14 -12 l-18 10 l-7 -2 c-2 -1 -1 -2 1 -2 z"/></svg></div>
+        <span data-var-text="telegram">t.me/HabibulloShams</span>
+      </div>
+    </div>
+    <div id="end-cta-wrap" class="clip" data-start="0" data-duration="7"><div id="end-cta">Ҳозироқ ёзилинг</div></div>
+    <p id="end-note" class="clip" data-start="0" data-duration="7">Мутахассис билан маслаҳатлашинг</p>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#end-name", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 0);
+    tl.fromTo("#end-slogan", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 0.5);
+    tl.fromTo("#end-panel", { opacity: 0, y: 80 }, { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 0.9);
+    tl.fromTo("#end-r1, #end-r2, #end-r3", { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: 0.4, ease: "power3.out", stagger: 0.18 }, 1.1);
+    tl.fromTo("#end-cta", { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(2)" }, 2.1);
+    tl.to("#end-cta", { scale: 1.07, duration: 0.45, ease: "sine.inOut", yoyo: true, repeat: 7 }, 2.7);
+    tl.fromTo("#end-note", { opacity: 0 }, { opacity: 1, duration: 0.5 }, 2.5);
+    window.__timelines["endcard"] = tl;
+  </script>
+</template>

@@ -1,0 +1,110 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; font-family: "Montserrat", sans-serif; }
+    .cap-group {
+      position: absolute; left: 120px; right: 120px; top: 1150px; text-align: center;
+      opacity: 0; overflow: visible;
+    }
+    .cap-pill {
+      display: inline-block; max-width: 840px; padding: 12px 26px; border-radius: 22px;
+      background: rgba(11, 61, 145, 0.92); color: #ffffff;
+      font-weight: 800; font-size: 44px; line-height: 1.2;
+    }
+  </style>
+  <div id="root" data-composition-id="captions" data-width="1080" data-height="1920">
+    <div id="cap-g0" class="cap-group"><span class="cap-pill"><span id="cap-g0-w0" class="cap-w">Бел</span> <span id="cap-g0-w1" class="cap-w">ёки</span> <span id="cap-g0-w2" class="cap-w">бўйин</span> <span id="cap-g0-w3" class="cap-w">оғриғи</span></span></div>
+    <div id="cap-g1" class="cap-group"><span class="cap-pill"><span id="cap-g1-w0" class="cap-w">ҳаётингизни</span> <span id="cap-g1-w1" class="cap-w">қийинлаштиряптими?</span></span></div>
+    <div id="cap-g2" class="cap-group"><span class="cap-pill"><span id="cap-g2-w0" class="cap-w">Ҳабибулло</span> <span id="cap-g2-w1" class="cap-w">Шамс</span> <span id="cap-g2-w2" class="cap-w">клиникаси</span></span></div>
+    <div id="cap-g3" class="cap-group"><span class="cap-pill"><span id="cap-g3-w0" class="cap-w">замонавий</span> <span id="cap-g3-w1" class="cap-w">физиотерапия</span></span></div>
+    <div id="cap-g4" class="cap-group"><span class="cap-pill"><span id="cap-g4-w0" class="cap-w">ва</span> <span id="cap-g4-w1" class="cap-w">реабилитация</span> <span id="cap-g4-w2" class="cap-w">маркази</span></span></div>
+    <div id="cap-g5" class="cap-group"><span class="cap-pill"><span id="cap-g5-w0" class="cap-w">Кинезиотерапия,</span> <span id="cap-g5-w1" class="cap-w">массаж,</span></span></div>
+    <div id="cap-g6" class="cap-group"><span class="cap-pill"><span id="cap-g6-w0" class="cap-w">магнит,</span> <span id="cap-g6-w1" class="cap-w">лазер</span></span></div>
+    <div id="cap-g7" class="cap-group"><span class="cap-pill"><span id="cap-g7-w0" class="cap-w">ва</span> <span id="cap-g7-w1" class="cap-w">ТЕКАР</span> <span id="cap-g7-w2" class="cap-w">терапияси</span></span></div>
+    <div id="cap-g8" class="cap-group"><span class="cap-pill"><span id="cap-g8-w0" class="cap-w">ва</span> <span id="cap-g8-w1" class="cap-w">яна</span> <span id="cap-g8-w2" class="cap-w">50 дан</span> <span id="cap-g8-w3" class="cap-w">ортиқ</span> <span id="cap-g8-w4" class="cap-w">усул</span></span></div>
+    <div id="cap-g9" class="cap-group"><span class="cap-pill"><span id="cap-g9-w0" class="cap-w">Беморлар</span> <span id="cap-g9-w1" class="cap-w">учун</span> <span id="cap-g9-w2" class="cap-w">қулай</span> <span id="cap-g9-w3" class="cap-w">шароит</span></span></div>
+    <div id="cap-g10" class="cap-group"><span class="cap-pill"><span id="cap-g10-w0" class="cap-w">ва</span> <span id="cap-g10-w1" class="cap-w">тажрибали</span> <span id="cap-g10-w2" class="cap-w">мутахассислар</span></span></div>
+    <div id="cap-g11" class="cap-group"><span class="cap-pill"><span id="cap-g11-w0" class="cap-w">Жонга</span> <span id="cap-g11-w1" class="cap-w">шифо</span> <span id="cap-g11-w2" class="cap-w">ҳам оро!</span></span></div>
+    <div id="cap-g12" class="cap-group"><span class="cap-pill"><span id="cap-g12-w0" class="cap-w">Ҳозироқ</span> <span id="cap-g12-w1" class="cap-w">ёзилинг</span></span></div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#cap-g0", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 0.28);
+    tl.fromTo("#cap-g0-w0", { color: "#ffffff" }, { color: "#F5C518", duration: 0.06 }, 0.36);
+    tl.fromTo("#cap-g0-w1", { color: "#ffffff" }, { color: "#F5C518", duration: 0.06 }, 0.66);
+    tl.fromTo("#cap-g0-w2", { color: "#ffffff" }, { color: "#F5C518", duration: 0.06 }, 1.08);
+    tl.fromTo("#cap-g0-w3", { color: "#ffffff" }, { color: "#F5C518", duration: 0.06 }, 1.52);
+    tl.to("#cap-g0", { opacity: 0, duration: 0.1, ease: "power2.in" }, 1.80);
+    tl.set("#cap-g0", { opacity: 0, visibility: "hidden" }, 1.90);
+    tl.fromTo("#cap-g1", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 1.90);
+    tl.fromTo("#cap-g1-w0", { color: "#ffffff" }, { color: "#F5C518", duration: 0.06 }, 1.98);
+    tl.fromTo("#cap-g1-w1", { color: "#ffffff" }, { color: "#F5C518", duration: 0.06 }, 2.84);
+    tl.to("#cap-g1", { opacity: 0, duration: 0.1, ease: "power2.in" }, 4.05);
+    tl.set("#cap-g1", { opacity: 0, visibility: "hidden" }, 4.15);
+    tl.fromTo("#cap-g2", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 4.52);
+    tl.fromTo("#cap-g2-w0", { color: "#ffffff" }, { color: "#F5C518", duration: 0.06 }, 4.60);
+    tl.fromTo("#cap-g2-w1", { color: "#ffffff" }, { color: "#F5C518", duration: 0.06 }, 5.24);
+    tl.fromTo("#cap-g2-w2", { color: "#ffffff" }, { color: "#F5C518", duration: 0.06 }, 5.62);
+    tl.to("#cap-g2", { opacity: 0, duration: 0.1, ease: "power2.in" }, 6.53);
+    tl.set("#cap-g2", { opacity: 0, visibility: "hidden" }, 6.63);
+    tl.fromTo("#cap-g3", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 6.70);
+    tl.fromTo("#cap-g3-w0", { color: "#ffffff" }, { color: "#F5C518", duration: 0.06 }, 6.78);
+    tl.fromTo("#cap-g3-w1", { color: "#ffffff" }, { color: "#F5C518", duration: 0.06 }, 7.40);
+    tl.to("#cap-g3", { opacity: 0, duration: 0.1, ease: "power2.in" }, 8.52);
+    tl.set("#cap-g3", { opacity: 0, visibility: "hidden" }, 8.62);
+    tl.fromTo("#cap-g4", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 8.62);
+    tl.fromTo("#cap-g4-w0", { color: "#ffffff" }, { color: "#F5C518", duration: 0.06 }, 8.70);
+    tl.fromTo("#cap-g4-w1", { color: "#ffffff" }, { color: "#F5C518", duration: 0.06 }, 8.82);
+    tl.fromTo("#cap-g4-w2", { color: "#ffffff" }, { color: "#F5C518", duration: 0.06 }, 9.70);
+    tl.to("#cap-g4", { opacity: 0, duration: 0.1, ease: "power2.in" }, 10.43);
+    tl.set("#cap-g4", { opacity: 0, visibility: "hidden" }, 10.53);
+    tl.fromTo("#cap-g5", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 10.92);
+    tl.fromTo("#cap-g5-w0", { color: "#ffffff" }, { color: "#F5C518", duration: 0.06 }, 11.00);
+    tl.fromTo("#cap-g5-w1", { color: "#ffffff" }, { color: "#F5C518", duration: 0.06 }, 12.18);
+    tl.to("#cap-g5", { opacity: 0, duration: 0.1, ease: "power2.in" }, 12.78);
+    tl.set("#cap-g5", { opacity: 0, visibility: "hidden" }, 12.88);
+    tl.fromTo("#cap-g6", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 12.88);
+    tl.fromTo("#cap-g6-w0", { color: "#ffffff" }, { color: "#F5C518", duration: 0.06 }, 12.96);
+    tl.fromTo("#cap-g6-w1", { color: "#ffffff" }, { color: "#F5C518", duration: 0.06 }, 13.74);
+    tl.to("#cap-g6", { opacity: 0, duration: 0.1, ease: "power2.in" }, 14.40);
+    tl.set("#cap-g6", { opacity: 0, visibility: "hidden" }, 14.50);
+    tl.fromTo("#cap-g7", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 14.50);
+    tl.fromTo("#cap-g7-w0", { color: "#ffffff" }, { color: "#F5C518", duration: 0.06 }, 14.58);
+    tl.fromTo("#cap-g7-w1", { color: "#ffffff" }, { color: "#F5C518", duration: 0.06 }, 14.78);
+    tl.fromTo("#cap-g7-w2", { color: "#ffffff" }, { color: "#F5C518", duration: 0.06 }, 15.20);
+    tl.to("#cap-g7", { opacity: 0, duration: 0.1, ease: "power2.in" }, 16.13);
+    tl.set("#cap-g7", { opacity: 0, visibility: "hidden" }, 16.23);
+    tl.fromTo("#cap-g8", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 16.42);
+    tl.fromTo("#cap-g8-w0", { color: "#ffffff" }, { color: "#F5C518", duration: 0.06 }, 16.50);
+    tl.fromTo("#cap-g8-w1", { color: "#ffffff" }, { color: "#F5C518", duration: 0.06 }, 16.62);
+    tl.fromTo("#cap-g8-w2", { color: "#ffffff" }, { color: "#F5C518", duration: 0.06 }, 17.02);
+    tl.fromTo("#cap-g8-w3", { color: "#ffffff" }, { color: "#F5C518", duration: 0.06 }, 17.82);
+    tl.fromTo("#cap-g8-w4", { color: "#ffffff" }, { color: "#F5C518", duration: 0.06 }, 18.18);
+    tl.to("#cap-g8", { opacity: 0, duration: 0.1, ease: "power2.in" }, 18.77);
+    tl.set("#cap-g8", { opacity: 0, visibility: "hidden" }, 18.87);
+    tl.fromTo("#cap-g9", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 19.46);
+    tl.fromTo("#cap-g9-w0", { color: "#ffffff" }, { color: "#F5C518", duration: 0.06 }, 19.54);
+    tl.fromTo("#cap-g9-w1", { color: "#ffffff" }, { color: "#F5C518", duration: 0.06 }, 20.04);
+    tl.fromTo("#cap-g9-w2", { color: "#ffffff" }, { color: "#F5C518", duration: 0.06 }, 20.34);
+    tl.fromTo("#cap-g9-w3", { color: "#ffffff" }, { color: "#F5C518", duration: 0.06 }, 20.62);
+    tl.to("#cap-g9", { opacity: 0, duration: 0.1, ease: "power2.in" }, 21.33);
+    tl.set("#cap-g9", { opacity: 0, visibility: "hidden" }, 21.43);
+    tl.fromTo("#cap-g10", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 21.46);
+    tl.fromTo("#cap-g10-w0", { color: "#ffffff" }, { color: "#F5C518", duration: 0.06 }, 21.54);
+    tl.fromTo("#cap-g10-w1", { color: "#ffffff" }, { color: "#F5C518", duration: 0.06 }, 21.68);
+    tl.fromTo("#cap-g10-w2", { color: "#ffffff" }, { color: "#F5C518", duration: 0.06 }, 22.34);
+    tl.to("#cap-g10", { opacity: 0, duration: 0.1, ease: "power2.in" }, 23.47);
+    tl.set("#cap-g10", { opacity: 0, visibility: "hidden" }, 23.57);
+    tl.fromTo("#cap-g11", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 24.42);
+    tl.fromTo("#cap-g11-w0", { color: "#ffffff" }, { color: "#F5C518", duration: 0.06 }, 24.50);
+    tl.fromTo("#cap-g11-w1", { color: "#ffffff" }, { color: "#F5C518", duration: 0.06 }, 24.84);
+    tl.fromTo("#cap-g11-w2", { color: "#ffffff" }, { color: "#F5C518", duration: 0.06 }, 25.18);
+    tl.to("#cap-g11", { opacity: 0, duration: 0.1, ease: "power2.in" }, 25.85);
+    tl.set("#cap-g11", { opacity: 0, visibility: "hidden" }, 25.95);
+    tl.fromTo("#cap-g12", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 26.06);
+    tl.fromTo("#cap-g12-w0", { color: "#ffffff" }, { color: "#F5C518", duration: 0.06 }, 26.14);
+    tl.fromTo("#cap-g12-w1", { color: "#ffffff" }, { color: "#F5C518", duration: 0.06 }, 26.62);
+    tl.to("#cap-g12", { opacity: 0, duration: 0.1, ease: "power2.in" }, 27.31);
+    tl.set("#cap-g12", { opacity: 0, visibility: "hidden" }, 27.41);
+    window.__timelines["captions"] = tl;
+  </script>
+</template>
