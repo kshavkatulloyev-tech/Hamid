@@ -1,5 +1,6 @@
 ◆  Checking clinic-promo-01
-[hyperframes] check: the report is saved to /home/user/Hamid/clinic-promo-01/.hyperframes/artifacts/checks/c3a02dae-03cc-4b26-9c04-5ec6b82548a9.json when the check ends, unless a warning says it could not be saved
+[hyperframes] check: the report is saved to /home/user/Hamid/clinic-promo-01/.hyperframes/artifacts/checks/2597331c-c15a-4b3b-80f0-43e11ca685d2.json when the check ends, unless a warning says it could not be saved
+[hyperframes] browserGpuMode probe → software (WebGL unavailable)
 [INFO] [Compiler] Fetched 11 font face(s) for "Montserrat" from Google Fonts (cached to /root/.cache/hyperframes/fonts/montserrat)
 [INFO] [Compiler] Injected deterministic @font-face rules for 1 requested font families
 [hyperframes] check: starting Chrome
@@ -297,7 +298,7 @@ Lint
   ⚠ timeline_track_too_dense: This HTML file has 4 timed elements. Smaller sub-compositions keep timelines easier to read, iterate on, and diff.
     /home/user/Hamid/clinic-promo-01/compositions/care.html [data-composition-id] t=0s
     Fix: Move coherent scene groups into smaller .html files and mount them from the parent with data-composition-src so the timeline stays easier to inspect, revise, and validate.
-  ⚠ timeline_track_too_dense: This HTML file has 5 timed elements. Smaller sub-compositions keep timelines easier to read, iterate on, and diff.
+  ⚠ timeline_track_too_dense: This HTML file has 4 timed elements. Smaller sub-compositions keep timelines easier to read, iterate on, and diff.
     /home/user/Hamid/clinic-promo-01/compositions/endcard.html [data-composition-id] t=0s
     Fix: Move coherent scene groups into smaller .html files and mount them from the parent with data-composition-src so the timeline stays easier to inspect, revise, and validate.
   0 error(s), 2 warning(s), 0 info(s)
@@ -308,21 +309,15 @@ Runtime
 Layout
   ⚠ t=1.722, 5.167, 8.611, 12.056, 15.5, 22.389, 25.833s outside_safe_zone #captions "Бел ёки бўйин оғриғи" — <div> "Бел ёки бўйин оғриғи" is outside the safe area: TikTok (right edge).
         Fix: Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.
-  ⚠ t=5.167, 8.611s outside_safe_zone #brand-name "Ҳабибулло Шамс" — <h1> "Ҳабибулло Шамс" is outside the safe area: TikTok (right edge), YouTube Shorts (right edge).
-        Fix: Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.
   ⚠ t=8.611s outside_safe_zone #brand-sub "Замонавий физиотерапиява реабилитация маркази" — <p> "Замонавий физиотерапиява реабилитация маркази" is outside the safe area: TikTok (right edge).
         Fix: Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.
   ⚠ t=22.389s outside_safe_zone #care-slogan "Соғлом ҳаракат – мустаҳкам ҳаёт!" — <h2> "Соғлом ҳаракат – мустаҳкам ҳаёт!" is outside the safe area: YouTube Shorts (right edge).
         Fix: Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.
   ⚠ t=22.389s outside_safe_zone #care-r2 > div:nth-of-type(2) "Тажрибали мутахассислар" — <div> "Тажрибали мутахассислар" is outside the safe area: TikTok (right edge).
         Fix: Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.
-  ⚠ t=25.833, 29.278s outside_safe_zone #end-name "Ҳабибулло Шамс" — <h1> "Ҳабибулло Шамс" is outside the safe area: YouTube Shorts (right edge).
-        Fix: Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.
-  ⚠ t=29.278s outside_safe_zone #end-cta-wrap "Ҳозироқ ёзилинг" — <div> "Ҳозироқ ёзилинг" is outside the safe area: TikTok (right edge).
-        Fix: Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.
   ⚠ t=29.278s outside_safe_zone #end-note "Мутахассис билан маслаҳатлашинг" — <p> "Мутахассис билан маслаҳатлашинг" is outside the safe area: TikTok (right edge).
         Fix: Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.
-  0 error(s), 8 warning(s), 0 info(s)
+  0 error(s), 5 warning(s), 0 info(s)
 
 Motion
   ◇ 0 errors, 0 warnings
@@ -344,5 +339,5 @@ Snapshots
   ◇ disabled
 
 ◇  Check passed
-Report: /home/user/Hamid/clinic-promo-01/.hyperframes/artifacts/checks/c3a02dae-03cc-4b26-9c04-5ec6b82548a9.json
-Revision: a0f6891c-fcd8-4bcc-8a1f-20365863ca30 (recorded-revision)
+Report: /home/user/Hamid/clinic-promo-01/.hyperframes/artifacts/checks/2597331c-c15a-4b3b-80f0-43e11ca685d2.json
+Revision: 58222845-12c7-4d9c-8be3-3eac624a4217 (recorded-revision)

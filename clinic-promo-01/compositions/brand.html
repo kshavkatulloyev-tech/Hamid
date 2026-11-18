@@ -1,65 +1,44 @@
 <template>
   <style>
     #root { position: absolute; inset: 0; font-family: "Montserrat", sans-serif; }
-    #brand-art { position: absolute; left: 0; right: 0; top: 300px; height: 460px; }
-    #brand-art svg { display: block; margin: 0 auto; }
-    #brand-name {
-      position: absolute; left: 120px; right: 120px; top: 790px; text-align: center; white-space: nowrap;
-      color: #0b3d91; font-weight: 900; font-size: 80px; line-height: 1.05;
-    }
-    #brand-name small { display: block; font-size: 58px; font-weight: 800; color: #24801f; margin-top: 6px; }
+    #brand-rings { position: absolute; left: 0; right: 0; top: 280px; height: 700px; }
+    #brand-rings svg { display: block; margin: 0 auto; }
+    #brand-logo-wrap { position: absolute; left: 0; right: 0; top: 320px; height: 640px; text-align: center; }
+    #brand-logo { width: 640px; height: 640px; object-fit: contain; }
     #brand-sub {
       position: absolute; left: 120px; right: 120px; top: 990px; text-align: center;
       color: #0b3d91; font-weight: 600; font-style: italic; font-size: 40px; line-height: 1.25;
     }
   </style>
   <div id="root" data-composition-id="brand" data-width="1080" data-height="1920">
-    <div id="brand-art" class="clip" data-start="0" data-duration="6.4" data-layout-ignore>
-      <svg width="460" height="460" viewBox="0 0 560 560">
+    <div id="brand-rings" class="clip" data-start="0" data-duration="6.4" data-layout-ignore>
+      <svg width="760" height="700" viewBox="0 0 760 700">
         <defs>
           <radialGradient id="brand-glow" cx="50%" cy="50%" r="50%">
             <stop offset="0%" stop-color="#ffffff" stop-opacity="1" />
             <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
           </radialGradient>
         </defs>
-        <circle cx="280" cy="280" r="260" fill="url(#brand-glow)" />
-        <g id="brand-ring1"><ellipse cx="280" cy="280" rx="200" ry="70" fill="none" stroke="#3ba935" stroke-width="10" stroke-linecap="round" stroke-dasharray="520 900" /></g>
-        <g id="brand-ring2"><ellipse cx="280" cy="280" rx="230" ry="90" fill="none" stroke="#1e88e5" stroke-width="7" stroke-linecap="round" stroke-dasharray="380 1100" /></g>
-        <g id="brand-spine" fill="#0b3d91">
-          <rect x="262" y="70" width="36" height="24" rx="9" />
-          <rect x="261" y="102" width="38" height="26" rx="9" />
-          <rect x="259" y="136" width="42" height="28" rx="10" />
-          <rect x="258" y="172" width="44" height="30" rx="10" />
-          <rect x="256" y="210" width="48" height="30" rx="11" />
-          <rect x="255" y="248" width="50" height="32" rx="11" />
-          <rect x="254" y="288" width="52" height="32" rx="11" />
-          <rect x="254" y="328" width="52" height="34" rx="12" />
-          <rect x="254" y="370" width="52" height="34" rx="12" />
-          <rect x="256" y="412" width="48" height="34" rx="12" />
-          <path d="M262 454 h36 l-18 50 z" />
-        </g>
-        <path id="brand-leaf" d="M360 170 c40 -60 110 -60 130 -50 c-10 70 -60 110 -130 50 z" fill="#3ba935" />
+        <circle cx="380" cy="350" r="350" fill="url(#brand-glow)" />
+        <g id="brand-ring1"><circle cx="380" cy="350" r="335" fill="none" stroke="#3ba935" stroke-width="8" stroke-linecap="round" stroke-dasharray="420 1700" /></g>
+        <g id="brand-ring2"><circle cx="380" cy="350" r="318" fill="none" stroke="#1e88e5" stroke-width="5" stroke-linecap="round" stroke-dasharray="300 1700" /></g>
       </svg>
     </div>
-    <h1 id="brand-name" class="clip" data-start="0" data-duration="6.4">
-      Ҳабибулло Шамс<small>клиникаси</small>
-    </h1>
+    <div id="brand-logo-wrap" class="clip" data-start="0" data-duration="6.4">
+      <img id="brand-logo" src="assets/brand/logo-blue-green.png" alt="Ҳабибулло Шамс физиотерапия клиникаси" />
+    </div>
     <p id="brand-sub" class="clip" data-start="0" data-duration="6.4">
       Замонавий физиотерапия<br />ва реабилитация маркази
     </p>
   </div>
   <script>
     const tl = gsap.timeline({ paused: true });
-    tl.fromTo("#brand-spine rect, #brand-spine path", { opacity: 0, y: -20 },
-      { opacity: 1, y: 0, duration: 0.3, ease: "power2.out", stagger: 0.05 }, 0);
-    tl.fromTo("#brand-ring1", { rotation: 0, svgOrigin: "280 280", opacity: 0 },
-      { rotation: 360, opacity: 1, duration: 6.4, ease: "none" }, 0);
-    tl.fromTo("#brand-ring2", { rotation: 40, svgOrigin: "280 280", opacity: 0 },
-      { rotation: -280, opacity: 1, duration: 6.4, ease: "none" }, 0);
-    tl.fromTo("#brand-leaf", { scale: 0, transformOrigin: "0% 100%" }, { scale: 1, duration: 0.6, ease: "back.out(1.7)" }, 0.8);
-    tl.fromTo("#brand-name", { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 0.3);
+    tl.fromTo("#brand-logo", { opacity: 0, scale: 0.7, rotation: -4 }, { opacity: 1, scale: 1, rotation: 0, duration: 0.7, ease: "back.out(1.6)" }, 0.1);
+    tl.to("#brand-logo", { scale: 1.04, duration: 5.2, ease: "none" }, 0.8);
+    tl.fromTo("#brand-ring1", { rotation: 0, svgOrigin: "380 350", opacity: 0 }, { rotation: 300, opacity: 1, duration: 6.4, ease: "none" }, 0);
+    tl.fromTo("#brand-ring2", { rotation: 180, svgOrigin: "380 350", opacity: 0 }, { rotation: -120, opacity: 1, duration: 6.4, ease: "none" }, 0);
     tl.fromTo("#brand-sub", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 2.3);
-    tl.to("#brand-art, #brand-name, #brand-sub", { opacity: 0, duration: 0.3, ease: "power2.in" }, 6.05);
+    tl.to("#brand-rings, #brand-logo-wrap, #brand-sub", { opacity: 0, duration: 0.3, ease: "power2.in" }, 6.05);
     window.__timelines["brand"] = tl;
   </script>
 </template>
