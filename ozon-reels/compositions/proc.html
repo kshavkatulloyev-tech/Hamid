@@ -1,0 +1,40 @@
+<template>
+  <style>
+    @font-face{font-family:"Mont";src:url("assets/fonts/mont-latin.woff2") format("woff2");font-weight:100 900;unicode-range:U+0000-00FF,U+2000-206F,U+2080-208F,U+2212;}
+@font-face{font-family:"Mont";src:url("assets/fonts/mont-cyrillic.woff2") format("woff2");font-weight:100 900;unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;}
+@font-face{font-family:"Mont";src:url("assets/fonts/mont-cyrext.woff2") format("woff2");font-weight:100 900;unicode-range:U+0460-052F;}
+    #root { position:absolute; inset:0; overflow:hidden; font-family:"Mont",sans-serif; background:linear-gradient(170deg,#F2FBFA 0%, #D9F4F1 100%); }
+    #pr-title { position:absolute; left:120px; right:140px; top:320px; color:#0B3C5D; font-weight:900; font-size:74px; line-height:1.05; }
+    #pr-title span { color:#0B7F79; }
+    #pr-card { position:absolute; left:120px; top:510px; width:840px; height:490px; border-radius:44px; overflow:hidden; box-shadow:0 30px 80px rgba(11,60,93,.25); border:8px solid #fff; }
+    #pr-card img { width:100%; height:100%; object-fit:cover; object-position:30% 50%; }
+    .pr-badge { position:absolute; left:120px; height:88px; padding:0 36px 0 24px; border-radius:48px; background:#0B3C5D; color:#fff; font-weight:800; font-size:42px; display:flex; align-items:center; gap:20px; box-shadow:0 14px 34px rgba(11,60,93,.25); }
+    .pr-badge i { width:58px; height:58px; border-radius:50%; background:#FFD23F; color:#0B3C5D; font-style:normal; display:flex; align-items:center; justify-content:center; font-size:36px; font-weight:900; }
+.pr-dot { position:absolute; border-radius:50%; background:rgba(27,163,156,.16); }
+  </style>
+  <div id="root" data-composition-id="proc" data-width="1080" data-height="1920">
+    <div id="pr-d0" class="pr-dot" data-layout-ignore style="left:140px;top:1420px;width:260px;height:260px"></div>
+    <div id="pr-d1" class="pr-dot" data-layout-ignore style="left:560px;top:1520px;width:180px;height:180px"></div>
+    <div id="pr-d2" class="pr-dot" data-layout-ignore style="left:820px;top:1380px;width:120px;height:120px"></div>
+    <div id="pr-d3" class="pr-dot" data-layout-ignore style="left:330px;top:1700px;width:140px;height:140px"></div>
+    <div id="pr-d4" class="pr-dot" data-layout-ignore style="left:760px;top:1720px;width:240px;height:240px"></div>
+    <h2 id="pr-title">Муолажа<br/><span>қандай ўтади?</span></h2>
+    <div id="pr-card"><img id="pr-img" src="assets/proc2.jpg" alt="" /></div>
+    <div id="pr-b1" class="pr-badge" style="top:1035px"><i>✓</i>Тажрибали ҳамшира</div>
+    <div id="pr-b2" class="pr-badge" style="top:1135px;background:#0B7F79"><i>✓</i>Стерил шароит</div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#pr-title", { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, 0);
+    tl.fromTo("#pr-card", { y: 80, opacity: 0, scale: 0.94 }, { y: 0, opacity: 1, scale: 1, duration: 0.6, ease: "power3.out" }, 0.2);
+    tl.fromTo("#pr-img", { scale: 1.25 }, { scale: 1.05, duration: 5, ease: "none" }, 0);
+    tl.fromTo("#pr-b1", { x: -120, opacity: 0 }, { x: 0, opacity: 1, duration: 0.45, ease: "back.out(1.6)" }, 1.0);
+    tl.fromTo("#pr-b2", { x: -120, opacity: 0 }, { x: 0, opacity: 1, duration: 0.45, ease: "back.out(1.6)" }, 1.4);
+    tl.fromTo("#pr-d0", { y: 0, scale: 0.8 }, { y: -60, scale: 1, duration: 5, ease: "sine.inOut" }, 0);
+    tl.fromTo("#pr-d1", { y: 0, scale: 0.8 }, { y: -85, scale: 1, duration: 5, ease: "sine.inOut" }, 0);
+    tl.fromTo("#pr-d2", { y: 0, scale: 0.8 }, { y: -110, scale: 1, duration: 5, ease: "sine.inOut" }, 0);
+    tl.fromTo("#pr-d3", { y: 0, scale: 0.8 }, { y: -135, scale: 1, duration: 5, ease: "sine.inOut" }, 0);
+    tl.fromTo("#pr-d4", { y: 0, scale: 0.8 }, { y: -160, scale: 1, duration: 5, ease: "sine.inOut" }, 0);
+    window.__timelines["proc"] = tl;
+  </script>
+</template>

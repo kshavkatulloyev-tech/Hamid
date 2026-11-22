@@ -1,0 +1,621 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>ONE LINE</title>
+<style>
+@font-face{font-family:'Inter';src:url(__FONT__) format('woff2');font-weight:100 900;}
+html,body{margin:0;width:1920px;height:1080px;overflow:hidden;background:#0B0B0C;}
+#stage{position:absolute;left:0;top:0;width:1920px;height:1080px;overflow:hidden;background:#0B0B0C;}
+.d3{position:absolute;left:0;top:0;width:1920px;height:1080px;perspective-origin:960px 540px;}
+.world{position:absolute;left:960px;top:540px;width:0;height:0;transform-style:preserve-3d;}
+.slab,.face,.letter,.layer{position:absolute;left:0;top:0;transform-origin:0 0;transform-style:preserve-3d;}
+.face{backface-visibility:hidden;}
+.layer{font-family:'Inter';font-weight:900;white-space:pre;line-height:1;}
+svg{position:absolute;left:0;top:0;}
+text{font-family:'Inter';}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="cube3d" class="d3"><div class="world" id="cubeWorld"></div></div>
+  <div id="type3d" class="d3"><div class="world" id="typeWorld"></div></div>
+  <svg id="svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+    <defs id="defs"></defs>
+    <g id="root"></g>
+  </svg>
+</div>
+<script>
+// ------------------------------------------------------------------ basics
+const W = 1920, H = 1080, CX = 960, CY = 540, DUR = 15, DT = 1 / 120;
+const COL = { k: '#0B0B0C', w: '#F2EFE8', o: '#FF4A1C', b: '#2E4BFF' };
+const NS = 'http://www.w3.org/2000/svg';
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const lerp = (a, b, x) => a + (b - a) * x;
+const seg = (t, t0, d) => clamp((t - t0) / d);
+const eOut = x => x <= 0 ? 0 : x >= 1 ? 1 : (1 - Math.pow(2, -10 * x)) / (1 - Math.pow(2, -10));
+const eIn = x => x <= 0 ? 0 : x >= 1 ? 1 : (Math.pow(2, 10 * x) - 1) / (Math.pow(2, 10) - 1);
+const eIO = x => x < 0.5 ? eIn(2 * x) / 2 : 0.5 + eOut(2 * x - 1) / 2;
+// critically damped spring (no overshoot): progress after dt seconds
+const spr = (dt, w = 16) => dt <= 0 ? 0 : 1 - (1 + w * dt) * Math.exp(-w * dt);
+const hex2rgb = h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16));
+const mixC = (a, b, x) => { const A = hex2rgb(a), B = hex2rgb(b); return `rgb(${A.map((v, i) => Math.round(lerp(v, B[i], clamp(x)))).join(',')})`; };
+const $ = id => document.getElementById(id);
+function el(tag, attrs = {}, parent = $('root')) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  parent.appendChild(e); return e;
+}
+function set(e, attrs) { for (const k in attrs) e.setAttribute(k, attrs[k]); }
+function show(e, v) { e.style.display = v ? '' : 'none'; }
+function hdiv(cls, parent) { const d = document.createElement('div'); d.className = cls; parent.appendChild(d); return d; }
+
+// directional blur from velocity (SVG elements)
+let blurN = 0;
+function blur(e, dx, dy) {
+  const sx = Math.min(36, Math.abs(dx) * 0.55), sy = Math.min(36, Math.abs(dy) * 0.55);
+  if (sx < 0.4 && sy < 0.4) { e.removeAttribute('filter'); return; }
+  if (!e._f) {
+    const id = 'bl' + (blurN++);
+    const f = el('filter', { id, filterUnits: 'userSpaceOnUse', x: -400, y: -400, width: 2720, height: 1880 }, $('defs'));
+    e._g = el('feGaussianBlur', { stdDeviation: '0 0' }, f); e._f = id;
+  }
+  e._g.setAttribute('stdDeviation', `${sx.toFixed(2)} ${sy.toFixed(2)}`);
+  e.setAttribute('filter', `url(#${e._f})`);
+}
+
+// ------------------------------------------------------------------ type
+const CAP = 0.727; // Inter cap height / em
+let measurer;
+function charW(ch, size, weight) {
+  if (ch === ' ') return 0.26 * size;
+  measurer.setAttribute('font-size', size); measurer.setAttribute('font-weight', weight);
+  measurer.textContent = ch; return measurer.getComputedTextLength();
+}
+function makeWord(str, size, { track = -0.025, weight = 900, fill = COL.w, parent = $('root'), shift = 0 } = {}) {
+  const g = el('g', {}, parent);
+  const chars = [...str]; const tr = track * size; let x = 0; const L = [];
+  chars.forEach((ch, i) => {
+    const w = charW(ch, size, weight);
+    const t = el('text', { 'font-size': size, 'font-weight': weight, fill, x: 0, y: 0 }, g);
+    t.textContent = ch; L.push({ ch, el: t, x, w }); x += w + (i < chars.length - 1 ? tr : 0);
+  });
+  const width = x;
+  L.forEach(l => { l.x0 = CX - width / 2 + l.x + shift; l.cx = l.x0 + l.w / 2; });
+  return { g, L, width, size, capH: CAP * size, base: CY + CAP * size / 2 };
+}
+// place letter: baseline-left at (x,y), extra ops in letter-local space
+function place(l, x, y, ops = '') { l.el.setAttribute('transform', `translate(${x.toFixed(2)},${y.toFixed(2)}) ${ops}`); }
+
+// ------------------------------------------------------------------ build
+let S = {};
+function build() {
+  measurer = el('text', { x: -9999, y: -9999 }, $('defs'));
+  const R = $('root');
+
+  // ---- HOOK
+  S.hook = el('g', {}, R);
+  S.LINE = makeWord('LINE', 380, { parent: S.hook });
+  S.segs = [0, 1, 2, 3].map(() => el('rect', { fill: COL.w }, S.hook));
+  S.LINE.L.forEach((l, i) => {
+    const cp = el('clipPath', { id: 'lc' + i }, $('defs'));
+    l.clip = el('rect', {}, cp);
+    l.wrap = el('g', { 'clip-path': `url(#lc${i})` }, S.LINE.g); l.wrap.appendChild(l.el);
+  });
+
+  // ---- KINETIC
+  S.kin = el('g', {}, R);
+  const cpB = el('clipPath', { id: 'cpBends' }, $('defs'));
+  S.BENDS = makeWord('BENDS', 300, { parent: el('g', { 'clip-path': 'url(#cpBends)' }, S.kin) });
+  el('rect', { x: 0, y: 0, width: W, height: S.BENDS.base + 4 }, cpB);
+  S.INTO = makeWord('INTO', 300, { parent: S.kin });
+  S.EVERY = makeWord('EVERY', 300, { parent: S.kin });
+  S.shapeG = el('g', {}, S.kin);
+  S.SHAPE = makeWord('SHAPE', 300, { parent: S.shapeG, shift: -26 });
+  S.dot = el('circle', { fill: COL.o, r: 30 }, S.shapeG);
+  S.dotX = CX + S.SHAPE.width / 2 - 26 + 22 + 30; S.dotY = S.SHAPE.base - 30;
+
+  // ---- MORPH
+  S.morph = el('g', {}, R);
+  S.shape = el('path', {}, S.morph);
+  S.faceL = el('polygon', { fill: COL.o }, S.morph);
+  S.faceR = el('polygon', { fill: COL.b }, S.morph);
+
+  // ---- CUBE (3D DOM)
+  S.A = 270 / Math.sqrt(2 / 3);
+  const cw = $('cubeWorld');
+  S.slabs = [];
+  for (let k = 0; k < 5; k++) {
+    const s = hdiv('slab', cw); const faces = {};
+    const fc = { front: COL.b, back: COL.b, left: COL.o, right: COL.o, top: COL.w, bottom: COL.w };
+    for (const n in fc) { faces[n] = hdiv('face', s); faces[n].style.background = fc[n]; }
+    S.slabs.push({ el: s, faces });
+  }
+
+  // ---- DATA
+  S.data = el('g', {}, R);
+  const cpD = el('clipPath', { id: 'cpData' }, $('defs'));
+  S.cpDataRect = el('rect', { x: 0, y: 0, width: W, height: 0 }, cpD);
+  const dg = el('g', { 'clip-path': 'url(#cpData)' }, S.data);
+  S.bars = [0, 1, 2, 3, 4].map(() => el('rect', {}, dg));
+  S.nums = [0, 1, 2, 3, 4].map(() => {
+    const t = el('text', { 'font-size': 44, 'font-weight': 700, fill: COL.w, 'text-anchor': 'middle' }, dg);
+    t.style.fontVariantNumeric = 'tabular-nums'; return t;
+  });
+  S.baseline = el('rect', { fill: COL.w }, R);
+
+  // ---- UI
+  S.ui = el('g', {}, R);
+  S.grid = [];
+  for (let i = 0; i < 6; i++) S.grid.push(el('line', { stroke: COL.w, 'stroke-opacity': 0.16, 'stroke-width': 2 }, S.ui));
+  S.panel = el('rect', { x: 440, y: 210, width: 1040, height: 660, rx: 28, fill: 'none', stroke: COL.w, 'stroke-width': 3 }, S.ui);
+  S.curve = el('path', { fill: 'none', stroke: COL.w, 'stroke-width': 6, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, R);
+  S.dots = [0, 1, 2, 3, 4].map(() => el('circle', { fill: COL.w, r: 0 }, R));
+  S.handles = [0, 1].map(() => ({ line: el('line', { stroke: COL.b, 'stroke-width': 4 }, S.ui), end: el('circle', { fill: COL.b, r: 10 }, S.ui) }));
+  S.keys = [0, 1].map(() => el('rect', { fill: COL.o, width: 28, height: 28 }, S.ui));
+  const cpL = el('clipPath', { id: 'cpLabel' }, $('defs'));
+  el('rect', { x: 440, y: 240, width: 700, height: 64 }, cpL);
+  const lg = el('g', { 'clip-path': 'url(#cpLabel)' }, S.ui);
+  S.lab1 = el('text', { 'font-size': 30, 'font-weight': 700, fill: COL.w, x: 500, y: 288, 'letter-spacing': 4 }, lg); S.lab1.textContent = 'EASE  ·  EXPO OUT';
+  S.lab2 = el('text', { 'font-size': 30, 'font-weight': 700, fill: COL.o, x: 500, y: 288, 'letter-spacing': 4 }, lg); S.lab2.textContent = 'SPRING  ·  UNDERDAMPED';
+  S.readout = el('text', { 'font-size': 30, 'font-weight': 700, fill: COL.w, x: 1420, y: 288, 'text-anchor': 'end', 'letter-spacing': 4 }, S.ui);
+  S.readout.style.fontVariantNumeric = 'tabular-nums';
+  S.playhead = el('rect', { fill: COL.o }, R);
+  S.ride = el('circle', { fill: COL.w, r: 14 }, R);
+
+  // ---- TITLE (3D DOM + flat SVG)
+  S.TS = 250;
+  S.TITLE = makeWord('ONE LINE', S.TS, { parent: el('g', {}, R) });
+  S.title2d = S.TITLE.g;
+  S.tw = $('typeWorld');
+  S.tletters = S.TITLE.L.map(l => {
+    const d = hdiv('letter', S.tw); const layers = [];
+    const NL = 16;
+    for (let k = 0; k < NL; k++) {
+      const s = hdiv('layer', d); s.textContent = l.ch; s.style.fontSize = S.TS + 'px';
+      s.style.color = k === 0 ? COL.w : (k < NL - 5 ? COL.o : COL.b);
+      layers.push(s);
+    }
+    layers.reverse().forEach(s => d.appendChild(s)); layers.reverse();
+    return { el: d, layers, l };
+  });
+  S.tbars = S.TITLE.L.filter(l => l.ch !== ' ').map(() => el('rect', { fill: COL.o }, R));
+  S.under = el('rect', { fill: COL.o }, R);
+  const cpS = el('clipPath', { id: 'cpSub' }, $('defs'));
+  S.cpSubRect = el('rect', { x: 0, y: 0, width: W, height: 0 }, cpS);
+  S.sub = el('text', { 'font-size': 36, 'font-weight': 600, fill: COL.w, 'text-anchor': 'middle', 'letter-spacing': 11, x: CX }, el('g', { 'clip-path': 'url(#cpSub)' }, R));
+  S.sub.textContent = 'MOTION DESIGN REEL  ·  2026';
+}
+
+// ------------------------------------------------------------------ HOOK 0–2.4
+function segState(t, i) {
+  const Lw = S.LINE.width, l = S.LINE.L[i];
+  const wl = lerp(W, Lw, eOut(seg(t, 0, 0.45)));
+  let cx = CX - wl / 2 + wl * (i + 0.5) / 4, len = wl / 4, th = 6, ang = 0;
+  const cxA = CX - Lw / 2 + Lw * (i + 0.5) / 4;
+  const sB = spr(t - 0.5, 16);
+  if (t >= 0.5) { cx = lerp(cxA, l.cx, sB); len = lerp(Lw / 4, 110, sB); }
+  const sC = spr(t - 1.0, 16);
+  ang = 90 * sC; len = lerp(len, S.LINE.capH, sC); th = lerp(6, 16, sC);
+  const u = eOut(seg(t, 1.5, 0.35));
+  th = th * (1 - u);
+  return { cx, len, th, ang, u };
+}
+function drawHook(t) {
+  const on = t < 2.45; show(S.hook, on); if (!on) return;
+  S.segs.forEach((r, i) => {
+    const s = segState(t, i), p = segState(t - DT, i);
+    const vis = s.th > 0.3;
+    show(r, vis); if (!vis) return;
+    set(r, { x: -s.len / 2, y: -s.th / 2, width: s.len, height: s.th, transform: `translate(${s.cx},${CY}) rotate(${s.ang})` });
+    blur(r, s.cx - p.cx, 0);
+  });
+  S.LINE.L.forEach((l, i) => {
+    const s = segState(t, i);
+    const vis = t >= 1.5; show(l.wrap, vis); if (!vis) return;
+    const ww = lerp(16, l.w + 60, s.u);
+    set(l.clip, { x: l.cx - ww / 2, y: 0, width: ww, height: S.LINE.base + 2 });
+    const fy = (tt) => S.LINE.capH * 1.08 * eIn(seg(tt, 2.0 + i * 0.02, 0.15));
+    place(l, l.x0, S.LINE.base + fy(t));
+    blur(l.el, 0, fy(t) - fy(t - DT));
+  });
+}
+
+// ------------------------------------------------------------------ KINETIC 2–4
+function pushXf(t) { // camera push into the full stop
+  const e = eIn(seg(t, 3.78, 0.22));
+  const sc = Math.exp(Math.log(9) * e);
+  const tx = lerp(S.dotX, CX, e), ty = lerp(S.dotY, CY, e);
+  return `translate(${tx},${ty}) scale(${sc}) translate(${-S.dotX},${-S.dotY})`;
+}
+function drawKin(t) {
+  const on = t >= 2.0 && t < 4.0; show(S.kin, on); if (!on) return;
+  // BENDS: hinge up from below the baseline, then conveyor out left
+  const bendX = (tt, i) => -W * eIO(seg(tt, 2.5 + i * 0.015, 0.4));
+  show(S.BENDS.g, t < 2.95);
+  S.BENDS.L.forEach((l, i) => {
+    const rot = 90 * (1 - spr(t - (2.1 + i * 0.035), 18));
+    place(l, l.x0 + bendX(t, i), S.BENDS.base, `rotate(${rot.toFixed(2)})`);
+    blur(l.el, bendX(t, i) - bendX(t - DT, i), 0);
+  });
+  // INTO: conveyor in from right, squash out
+  const intoX = (tt, i) => W * (1 - eIO(seg(tt, 2.5 + i * 0.015, 0.4)));
+  show(S.INTO.g, t >= 2.5 && t < 3.3);
+  S.INTO.L.forEach((l, i) => {
+    const sy = Math.max(0.001, 1 - eIn(seg(t, 3.0 + i * 0.018, 0.1)));
+    place(l, l.x0 + intoX(t, i), S.INTO.base, `scale(1,${sy.toFixed(3)})`);
+    blur(l.el, intoX(t, i) - intoX(t - DT, i), 0);
+  });
+  // EVERY: rises from the baseline, then tracking explodes
+  const evX = (tt, l) => { const d = l.cx - CX, sg = d < -1 ? -1 : 1; return sg * (Math.abs(d) + 500) * 3 * eIn(seg(tt, 3.5, 0.2)); };
+  show(S.EVERY.g, t >= 3.1 && t < 3.8);
+  S.EVERY.L.forEach((l, i) => {
+    const sy = Math.max(0.001, spr(t - (3.1 + i * 0.035), 20));
+    place(l, l.x0 + evX(t, l), S.EVERY.base, `scale(1,${sy.toFixed(3)})`);
+    blur(l.el, evX(t, l) - evX(t - DT, l), 0);
+  });
+  // SHAPE: letters drop in alternately from above / below; full stop lands; push in
+  const shY = (tt, i) => (i % 2 ? 1 : -1) * 950 * (1 - eOut(seg(tt, 3.56 + i * 0.02, 0.22)));
+  const shX = (tt, i) => -(1500 + (4 - i) * 120) * eIn(seg(tt, 3.8, 0.17));
+  S.SHAPE.L.forEach((l, i) => {
+    place(l, l.x0 + shX(t, i), S.SHAPE.base + shY(t, i));
+    blur(l.el, (shX(t, i) - shX(t - DT, i)) * 4, shY(t, i) - shY(t - DT, i));
+  });
+  show(S.shapeG, t >= 3.5);
+  const r = 30 * spr(t - 3.64, 24);
+  set(S.dot, { cx: S.dotX, cy: S.dotY, r: Math.max(0.01, r) });
+  S.shapeG.setAttribute('transform', pushXf(t));
+}
+
+// ------------------------------------------------------------------ MORPH 4–6
+function polyR(verts, th) {
+  const dx = Math.cos(th), dy = Math.sin(th); let best = 1e9;
+  for (let i = 0; i < verts.length; i++) {
+    const [ax, ay] = verts[i], [bx, by] = verts[(i + 1) % verts.length];
+    const ex = bx - ax, ey = by - ay, den = dx * ey - dy * ex;
+    if (Math.abs(den) < 1e-9) continue;
+    const s = (ax * ey - ay * ex) / den, u = (ax * dy - ay * dx) / den;
+    if (s > 0 && u >= -1e-6 && u <= 1 + 1e-6) best = Math.min(best, s);
+  }
+  return best;
+}
+const polar = (list) => list.map(([deg, r]) => [r * Math.cos(deg * Math.PI / 180), r * Math.sin(deg * Math.PI / 180)]);
+const SQ = polar([[45, 300], [135, 300], [225, 300], [315, 300]]);
+const STAR = polar([0, 45, 90, 135, 180, 225, 270, 315].map((d, i) => [d, i % 2 ? 118 : 345]));
+const HEX = polar([-90, -30, 30, 90, 150, 210].map(d => [d, 270]));
+function drawMorph(t) {
+  const on = t >= 4.0 && t < 6.0; show(S.morph, on); if (!on) return;
+  const p1 = spr(t - 4.0, 14), p2 = spr(t - 4.5, 14), p3 = spr(t - 5.0, 14);
+  const rot = 90 * p1 + 45 * p2 + 45 * p3;
+  const N = 360; let d = '';
+  for (let i = 0; i < N; i++) {
+    const th = (i / N) * Math.PI * 2;
+    const r = lerp(lerp(lerp(270, polyR(SQ, th), p1), polyR(STAR, th), p2), polyR(HEX, th), p3);
+    d += (i ? 'L' : 'M') + (r * Math.cos(th)).toFixed(2) + ',' + (r * Math.sin(th)).toFixed(2);
+  }
+  set(S.shape, { d: d + 'Z', fill: mixC(COL.o, COL.w, p2), transform: `translate(${CX},${CY}) rotate(${rot.toFixed(3)})` });
+  // isometric faces flood out of the centre
+  const V = HEX.map(([x, y]) => [CX + x, CY + y]); // 0 top,1 UR,2 LR,3 bottom,4 LL,5 UL
+  const C = [CX, CY];
+  const face = (pts, s) => pts.map(([x, y]) => `${(CX + (x - CX) * s).toFixed(2)},${(CY + (y - CY) * s).toFixed(2)}`).join(' ');
+  const sl = eOut(seg(t, 5.5, 0.3)), sr = eOut(seg(t, 5.58, 0.3));
+  show(S.faceL, sl > 0); show(S.faceR, sr > 0);
+  set(S.faceL, { points: face([V[5], C, V[3], V[4]], sl) });
+  set(S.faceR, { points: face([C, V[1], V[2], V[3]], sr) });
+}
+
+// ------------------------------------------------------------------ CUBE 6–8
+const H1 = [0.45, 0.8, 0.6, 1.0, 0.35];
+function cubeState(t) {
+  const ry = 45 + 90 * spr(t - 6.0, 12) + 45 * spr(t - 7.5, 14);
+  const rx = -35.2644 + 15 * spr(t - 6.5, 12) + 20.2644 * spr(t - 7.5, 14);
+  const invP = (1 / 1500) * spr(t - 6.0, 10) * (1 - spr(t - 7.5, 14));
+  const g = 36 * spr(t - 6.5, 14);
+  const sc = 1 + 0.4 * spr(t - 6.0, 10);
+  const hk = H1.map(h => lerp(1, h, spr(t - 7.0, 14)));
+  return { ry, rx, invP, g, sc, hk };
+}
+function drawCube(t) {
+  const on = t >= 6.0 && t < 8.0; show($('cube3d'), on); if (!on) return;
+  const s = cubeState(t), A = S.A, sw = A / 5;
+  $('cube3d').style.perspective = s.invP < 1e-7 ? 'none' : (1 / s.invP).toFixed(1) + 'px';
+  $('cubeWorld').style.transform = `scale3d(${s.sc},${s.sc},${s.sc}) rotateX(${s.rx}deg) rotateY(${s.ry}deg)`;
+  S.slabs.forEach((sl, k) => {
+    const h = A * s.hk[k];
+    const x = -A / 2 + sw * (k + 0.5) + (k - 2) * s.g, y = A / 2 - h / 2;
+    sl.el.style.transform = `translate3d(${x}px,${y}px,0)`;
+    const F = sl.faces, E = 0.6;
+    const sz = (e, w, hh) => { e.style.width = (w + E) + 'px'; e.style.height = (hh + E) + 'px'; };
+    sz(F.front, sw, h); F.front.style.transform = `translateZ(${A / 2}px) translate(${-sw / 2 - E / 2}px,${-h / 2 - E / 2}px)`;
+    sz(F.back, sw, h); F.back.style.transform = `rotateY(180deg) translateZ(${A / 2}px) translate(${-sw / 2 - E / 2}px,${-h / 2 - E / 2}px)`;
+    sz(F.right, A, h); F.right.style.transform = `rotateY(90deg) translateZ(${sw / 2}px) translate(${-A / 2 - E / 2}px,${-h / 2 - E / 2}px)`;
+    sz(F.left, A, h); F.left.style.transform = `rotateY(-90deg) translateZ(${sw / 2}px) translate(${-A / 2 - E / 2}px,${-h / 2 - E / 2}px)`;
+    sz(F.top, sw, A); F.top.style.transform = `rotateX(90deg) translateZ(${h / 2}px) translate(${-sw / 2 - E / 2}px,${-A / 2 - E / 2}px)`;
+    sz(F.bottom, sw, A); F.bottom.style.transform = `rotateX(-90deg) translateZ(${h / 2}px) translate(${-sw / 2 - E / 2}px,${-A / 2 - E / 2}px)`;
+  });
+}
+
+// ------------------------------------------------------------------ DATA 8–10
+const HV1 = [0.62, 0.38, 0.85, 0.5, 0.72], HV2 = [0.4, 0.92, 0.55, 0.76, 0.3];
+const YB = 790, HMAX = 440, GX0 = 560, GX1 = 1360;
+function barState(t, j) {
+  const c = cubeState(8.0), A = S.A, sw = A / 5, k = 4 - j;
+  const x3 = -A / 2 + sw * (k + 0.5) + (k - 2) * c.g;
+  const cx0 = CX - c.sc * x3, w0 = c.sc * sw, h0 = c.sc * A * H1[k], yb0 = CY + c.sc * A / 2;
+  const s1 = spr(t - 8.0, 14), s2 = spr(t - 8.5, 14);
+  const cx = lerp(cx0, GX0 + j * 200, s1), w = lerp(w0, 120, s1), yb = lerp(yb0, YB, s1);
+  let hv = lerp(lerp(h0 / HMAX, HV1[j], s1), HV2[j], s2);
+  const sink = eIn(seg(t, 9.5 + j * 0.035, 0.22));
+  const h = HMAX * hv * (1 - sink);
+  const val = lerp(lerp(0, HV1[j], s1), HV2[j], s2);
+  return { cx, w, yb, h, val, s2, sink };
+}
+function curvePts(t) { // polyline through bar tops -> expo curve -> spring curve, 121 pts
+  const tops = [0, 1, 2, 3, 4].map(j => { const b = barState(9.4, j); return [b.cx, b.yb - HMAX * HV2[j]]; });
+  const m1 = spr(t - 10.0, 14), m2 = spr(t - 11.5, 16);
+  const pts = [];
+  for (let i = 0; i <= 120; i++) {
+    const u = i / 120, x = lerp(GX0, GX1, u);
+    const f = u * 4, a = Math.min(3, Math.floor(f)), r = f - a;
+    const py = lerp(tops[a][1], tops[a + 1][1], r);
+    const ex = eOut(u), sp = 0.92 * (1 - Math.exp(-5 * u) * Math.cos(3 * Math.PI * u));
+    const v = lerp(ex, sp, m2);
+    pts.push([x, lerp(py, YB - HMAX * v, m1)]);
+  }
+  return pts;
+}
+const curveVal = (t, u) => { const m2 = spr(t - 11.5, 16); return lerp(eOut(u), 0.92 * (1 - Math.exp(-5 * u) * Math.cos(3 * Math.PI * u)), m2); };
+function drawData(t) {
+  const on = t >= 8.0 && t < 10.0; show(S.data, on);
+  if (on) {
+    S.cpDataRect.setAttribute('height', YB);
+    S.bars.forEach((r, j) => {
+      const b = barState(t, j);
+      const col = j === 1 ? mixC(COL.b, COL.o, b.s2) : COL.b;
+      set(r, { x: b.cx - b.w / 2, y: b.yb - b.h, width: b.w, height: Math.max(0, b.h), fill: col });
+      const n = S.nums[j];
+      show(n, t >= 8.05);
+      const ns = Math.max(0.001, 1 - eIn(seg(t, 9.5, 0.1))); const ny = b.yb - b.h - 26;
+      set(n, { x: b.cx, y: ny, transform: `translate(0,${ny}) scale(1,${ns}) translate(0,${-ny})` }); n.textContent = String(Math.round(b.val * 100)).padStart(2, '0');
+    });
+    S.cpDataRect.setAttribute('height', YB);
+  }
+  // baseline: 8.0 -> 11.7
+  const bon = t >= 8.0 && t < 11.75; show(S.baseline, bon);
+  if (bon) {
+    let half = 960 * eOut(seg(t, 8.0, 0.45));
+    half = lerp(half, 520, eIO(seg(t, 9.6, 0.4)));
+    half = lerp(half, 400, eOut(seg(t, 10.0, 0.3)));
+    half = half * (1 - eIn(seg(t, 11.5, 0.2)));
+    set(S.baseline, { x: CX - half, y: YB, width: half * 2, height: 6 });
+  }
+}
+
+// ------------------------------------------------------------------ UI 9–12
+function uiXf(t) {
+  const e = eIn(seg(t, 11.7, 0.3)); const sc = Math.exp(Math.log(6) * e);
+  return `translate(${CX},565) scale(${sc}) translate(${-CX},-565)`;
+}
+function drawUI(t) {
+  // graph line from bar tops
+  const con = t >= 9.0 && t < 12.0; show(S.curve, con);
+  S.dots.forEach(d => show(d, false));
+  if (con) {
+    const pts = curvePts(t);
+    const q = eOut(seg(t, 9.0, 0.4)), n = Math.max(1, Math.round(q * 120));
+    let d = ''; for (let i = 0; i <= n; i++) d += (i ? 'L' : 'M') + pts[i][0].toFixed(2) + ',' + pts[i][1].toFixed(2);
+    set(S.curve, { d, transform: uiXf(t) });
+    // vertex dots while it is still a line graph
+    S.dots.forEach((dot, j) => {
+      const appear = spr(t - (9.0 + j * 0.09), 22) * (1 - spr(t - 10.0, 18));
+      show(dot, appear > 0.02);
+      set(dot, { cx: pts[j * 30][0], cy: pts[j * 30][1], r: 11 * appear, transform: uiXf(t) });
+    });
+  }
+  const on = t >= 10.0 && t < 12.0; show(S.ui, on);
+  const pon = t >= 11.0 && t < 12.0; show(S.playhead, pon); show(S.ride, t >= 11.0 && t < 11.62);
+  if (!on) return;
+  S.ui.setAttribute('transform', uiXf(t));
+  // panel draws from bottom centre
+  const P = 2 * (1040 + 660) - (8 - 2 * Math.PI) * 28;
+  const pd = eOut(seg(t, 10.0, 0.45));
+  set(S.panel, { 'stroke-dasharray': `${P * pd} ${P}`, 'stroke-dashoffset': -0.0 });
+  // grid
+  S.grid.forEach((g, i) => {
+    const grow = eOut(seg(t, 10.08 + i * 0.04, 0.3)) * (1 - eIn(seg(t, 11.5, 0.18)));
+    if (i < 3) { const y = YB - HMAX * (i + 1) / 3; set(g, { x1: GX0, x2: lerp(GX0, GX1, grow), y1: y, y2: y }); }
+    else { const x = lerp(GX0, GX1, (i - 2) / 3); set(g, { x1: x, x2: x, y1: YB, y2: lerp(YB, YB - HMAX, grow) }); }
+    show(g, grow > 0.001);
+  });
+  // keyframes + tangent handles
+  const K = [[GX0, YB], [GX1, YB - HMAX]];
+  const hdir = [[0.35, -0.94], [-1, 0]];
+  S.keys.forEach((k, i) => {
+    const sc = spr(t - (10.5 + i * 0.06), 20) * (1 - eIn(seg(t, 11.5, 0.15)));
+    show(k, sc > 0.01);
+    set(k, { x: -14, y: -14, transform: `translate(${K[i][0]},${K[i][1]}) rotate(45) scale(${sc})` });
+    const hl = 210 * eOut(seg(t, 10.56 + i * 0.06, 0.3)) * (1 - eIn(seg(t, 11.5, 0.15)));
+    const ex = K[i][0] + hdir[i][0] * hl, ey = K[i][1] + hdir[i][1] * hl;
+    set(S.handles[i].line, { x1: K[i][0], y1: K[i][1], x2: ex, y2: ey });
+    set(S.handles[i].end, { cx: ex, cy: ey, r: hl > 4 ? 10 : 0 });
+  });
+  // label slot
+  const sl = eOut(seg(t, 10.5, 0.3)), sw = eIO(seg(t, 11.5, 0.3));
+  set(S.lab1, { transform: `translate(0,${(1 - sl) * 60 - sw * 60})` });
+  set(S.lab2, { transform: `translate(0,${60 - sw * 60})` });
+  // playhead + readout
+  const u = seg(t, 11.0, 0.45);
+  const v = curveVal(t, u);
+  S.readout.textContent = t < 11.0 ? '' : 'VALUE ' + String(Math.round(v * 100)).padStart(3, '0');
+  if (pon) {
+    const back = eIO(seg(t, 11.55, 0.2));
+    const px = lerp(lerp(GX0, GX1, u), CX, back);
+    set(S.playhead, { x: px - 2, y: 330, width: 4, height: 470, transform: uiXf(t) });
+    set(S.ride, { cx: lerp(GX0, GX1, u), cy: YB - HMAX * v, transform: uiXf(t) });
+  }
+}
+
+// ------------------------------------------------------------------ TITLE 12–15
+function titleWorld(t) {
+  const ry = -30 * spr(t - 12.5, 9) + 52 * spr(t - 13.0, 10) - 22 * spr(t - 13.5, 14);
+  const rx = 24 * spr(t - 13.0, 10) - 24 * spr(t - 13.5, 14);
+  const invP = (1 / 1300) * (1 - spr(t - 13.5, 14));
+  const sc = 1 + 0.12 * spr(t - 13.0, 10) - 0.12 * spr(t - 13.5, 14);
+  const depth = 3.6 * (1 - spr(t - 13.5, 14));
+  return { ry, rx, invP, sc, depth };
+}
+function drawTitle(t) {
+  const T = S.TITLE;
+  // orange strokes split out of the playhead
+  const bon = t >= 12.0 && t < 12.9; S.tbars.forEach(b => show(b, bon));
+  if (bon) {
+    let bi = 0;
+    T.L.forEach((l, i) => {
+      if (l.ch === ' ') return;
+      const b = S.tbars[bi++];
+      const fx = (tt) => lerp(CX, l.cx, eOut(seg(tt, 12.0, 0.3)));
+      const e = eOut(seg(t, 12.0, 0.3));
+      const turn = spr(t - (12.5 + i * 0.035), 13);
+      const w = lerp(24, 16, e) * clamp(1 - turn * 1.8);
+      const h = lerp(H, T.capH, e);
+      show(b, w > 0.2);
+      set(b, { x: fx(t) - w / 2, y: CY - h / 2, width: w, height: h });
+      blur(b, fx(t) - fx(t - DT), 0);
+    });
+  }
+  // 3D extruded letters 12.5 – 14.0
+  const on3 = t >= 12.5 && t < 14.0; show($('type3d'), on3);
+  if (on3) {
+    const s = titleWorld(t);
+    $('type3d').style.perspective = s.invP < 1e-7 ? 'none' : (1 / s.invP).toFixed(1) + 'px';
+    S.tw.style.transform = `scale3d(${s.sc},${s.sc},${s.sc}) rotateX(${s.rx}deg) rotateY(${s.ry}deg)`;
+    S.tletters.forEach((tl, i) => {
+      const l = tl.l; const turn = spr(t - (12.5 + i * 0.035), 13);
+      const ang = 90 * (1 - turn);
+      tl.el.style.transform = `translate3d(${(l.cx - CX).toFixed(2)}px,0,0) rotateY(${ang.toFixed(2)}deg)`;
+      tl.layers.forEach((ly, k) => {
+        ly.style.transform = `translateZ(${(-k * s.depth).toFixed(2)}px) translate(${(-l.w / 2).toFixed(2)}px,${(-S.TS / 2).toFixed(2)}px)`;
+      });
+    });
+  }
+  // flat title 14.0 – 15, then collapse into the line
+  const on2 = t >= 14.0; show(S.title2d, on2);
+  const col = eIn(seg(t, 14.5, 0.32));
+  if (on2) {
+    T.L.forEach(l => {
+      const sy = Math.max(0.001, 1 - col);
+      // scale about cap centre (CY)
+      place(l, l.x0, CY + (T.base - CY) * sy, `scale(1,${sy.toFixed(4)})`);
+    });
+  }
+  // underline -> the line
+  const uon = t >= 13.6; show(S.under, uon);
+  if (uon) {
+    const grow = eOut(seg(t, 13.6, 0.3));
+    let half = (T.width / 2) * grow;
+    const fin = eIO(seg(t, 14.5, 0.46));
+    half = lerp(half, W / 2, fin);
+    const y = lerp(T.base + 46, CY - 3, eIO(seg(t, 14.5, 0.36)));
+    const th = lerp(10, 6, fin);
+    set(S.under, { x: CX - half, y, width: half * 2, height: th, fill: mixC(COL.o, COL.w, eIO(seg(t, 14.5, 0.3))) });
+  }
+  // subtitle
+  const son = t >= 14.0; show(S.sub, son);
+  if (son) {
+    const up = eOut(seg(t, 14.0, 0.32));
+    const sy = Math.max(0.001, 1 - col);
+    const y0 = T.base + 128;
+    S.cpSubRect.setAttribute('y', T.base + 60); S.cpSubRect.setAttribute('height', 200);
+    const yy = lerp(y0 + 70, y0, up);
+    set(S.sub, { y: 0, transform: `translate(0,${lerp(yy, CY, col)}) scale(1,${sy})` });
+  }
+}
+
+// ------------------------------------------------------------------ seek
+window.seek = function (t) {
+  t = ((t % DUR) + DUR) % DUR;
+  drawHook(t); drawKin(t); drawMorph(t); drawCube(t); drawData(t); drawUI(t); drawTitle(t);
+};
+
+// ------------------------------------------------------------------ audio
+window.renderAudio = async function () {
+  const sr = 48000, ctx = new OfflineAudioContext(2, sr * DUR, sr);
+  const comp = ctx.createDynamicsCompressor(); comp.threshold.value = -14; comp.ratio.value = 4; comp.attack.value = 0.003; comp.release.value = 0.15;
+  const master = ctx.createGain(); master.gain.value = 0.8; master.connect(comp); comp.connect(ctx.destination);
+  const noiseBuf = ctx.createBuffer(1, sr * 2, sr); { const d = noiseBuf.getChannelData(0); let s = 1234567; for (let i = 0; i < d.length; i++) { s = (s * 1103515245 + 12345) & 0x7fffffff; d[i] = (s / 0x7fffffff) * 2 - 1; } }
+  const noise = (t, dur, type, f, q, g0, pan = 0) => {
+    const n = ctx.createBufferSource(); n.buffer = noiseBuf;
+    const fl = ctx.createBiquadFilter(); fl.type = type; fl.frequency.value = f; fl.Q.value = q;
+    const g = ctx.createGain(); g.gain.setValueAtTime(g0, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    const p = ctx.createStereoPanner(); p.pan.value = pan;
+    n.connect(fl); fl.connect(g); g.connect(p); p.connect(master); n.start(t); n.stop(t + dur + 0.05);
+  };
+  const kick = (t, g0 = 1) => {
+    const o = ctx.createOscillator(); o.type = 'sine';
+    o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(42, t + 0.13);
+    const g = ctx.createGain(); g.gain.setValueAtTime(g0, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.42);
+    o.connect(g); g.connect(master); o.start(t); o.stop(t + 0.45);
+    noise(t, 0.012, 'highpass', 3000, 0.7, 0.25 * g0);
+  };
+  const bassNotes = [55, 55, 43.65, 49, 55, 65.41, 41.2, 55];
+  const bass = (t, f) => {
+    const o = ctx.createOscillator(); o.type = 'sawtooth'; o.frequency.value = f;
+    const fl = ctx.createBiquadFilter(); fl.type = 'lowpass'; fl.frequency.setValueAtTime(900, t); fl.frequency.exponentialRampToValueAtTime(140, t + 0.18); fl.Q.value = 3;
+    const g = ctx.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.22, t + 0.008); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
+    o.connect(fl); fl.connect(g); g.connect(master); o.start(t); o.stop(t + 0.25);
+  };
+  const hit = (t, big = false) => {
+    noise(t, big ? 0.9 : 0.32, 'bandpass', big ? 900 : 1600, 0.9, big ? 0.9 : 0.5);
+    const o = ctx.createOscillator(); o.type = 'sine';
+    o.frequency.setValueAtTime(big ? 90 : 120, t); o.frequency.exponentialRampToValueAtTime(big ? 28 : 45, t + (big ? 1.1 : 0.4));
+    const g = ctx.createGain(); g.gain.setValueAtTime(big ? 0.95 : 0.55, t); g.gain.exponentialRampToValueAtTime(0.0001, t + (big ? 1.3 : 0.5));
+    o.connect(g); g.connect(master); o.start(t); o.stop(t + 1.4);
+    const m = ctx.createOscillator(); m.type = 'square'; m.frequency.value = big ? 880 : 1320;
+    const mg = ctx.createGain(); mg.gain.setValueAtTime(0.06, t); mg.gain.exponentialRampToValueAtTime(0.0001, t + 0.12);
+    m.connect(mg); mg.connect(master); m.start(t); m.stop(t + 0.15);
+  };
+  for (let b = 0; b < 30; b++) {
+    const t = b * 0.5;
+    kick(t, b % 4 === 0 ? 1 : 0.85);
+    noise(t + 0.25, 0.05, 'highpass', 8000, 0.7, 0.12, 0.25);
+    if (b < 28) bass(t + 0.25, bassNotes[Math.floor(b / 4)]);
+  }
+  for (let b = 0; b < 30; b++) if (b >= 20 && b < 24) noise(b * 0.5 + 0.125, 0.03, 'highpass', 9000, 0.7, 0.07, -0.3), noise(b * 0.5 + 0.375, 0.03, 'highpass', 9000, 0.7, 0.07, 0.3);
+  [2, 4, 6, 8, 10, 14].forEach(t => hit(t)); hit(12, true);
+  // riser into the last full bar (10 -> 12)
+  { const n = ctx.createBufferSource(); n.buffer = noiseBuf; n.loop = true;
+    const fl = ctx.createBiquadFilter(); fl.type = 'bandpass'; fl.Q.value = 5;
+    fl.frequency.setValueAtTime(250, 10); fl.frequency.exponentialRampToValueAtTime(7000, 12);
+    const g = ctx.createGain(); g.gain.setValueAtTime(0.0001, 10); g.gain.exponentialRampToValueAtTime(0.55, 11.98); g.gain.setValueAtTime(0, 12);
+    n.connect(fl); fl.connect(g); g.connect(master); n.start(10); n.stop(12.01);
+    const o = ctx.createOscillator(); o.type = 'sawtooth'; o.frequency.setValueAtTime(110, 10); o.frequency.exponentialRampToValueAtTime(880, 12);
+    const of = ctx.createBiquadFilter(); of.type = 'lowpass'; of.frequency.setValueAtTime(400, 10); of.frequency.exponentialRampToValueAtTime(5000, 12);
+    const og = ctx.createGain(); og.gain.setValueAtTime(0.0001, 10); og.gain.exponentialRampToValueAtTime(0.12, 11.98); og.gain.setValueAtTime(0, 12);
+    o.connect(of); of.connect(og); og.connect(master); o.start(10); o.stop(12.01); }
+  // fold-back whoosh into the loop point
+  { const n = ctx.createBufferSource(); n.buffer = noiseBuf;
+    const fl = ctx.createBiquadFilter(); fl.type = 'bandpass'; fl.Q.value = 3;
+    fl.frequency.setValueAtTime(5000, 14.5); fl.frequency.exponentialRampToValueAtTime(300, 14.98);
+    const g = ctx.createGain(); g.gain.setValueAtTime(0.0001, 14.5); g.gain.exponentialRampToValueAtTime(0.35, 14.85); g.gain.exponentialRampToValueAtTime(0.0001, 14.99);
+    n.connect(fl); fl.connect(g); g.connect(master); n.start(14.5); n.stop(15); }
+  const buf = await ctx.startRendering();
+  // encode 16-bit WAV
+  const L = buf.getChannelData(0), Rr = buf.getChannelData(1), n = L.length;
+  const ab = new ArrayBuffer(44 + n * 4), v = new DataView(ab);
+  const ws = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+  ws(0, 'RIFF'); v.setUint32(4, 36 + n * 4, true); ws(8, 'WAVE'); ws(12, 'fmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 2, true);
+  v.setUint32(24, sr, true); v.setUint32(28, sr * 4, true); v.setUint16(32, 4, true); v.setUint16(34, 16, true); ws(36, 'data'); v.setUint32(40, n * 4, true);
+  for (let i = 0, o = 44; i < n; i++, o += 4) { v.setInt16(o, clamp(L[i], -1, 1) * 32767, true); v.setInt16(o + 2, clamp(Rr[i], -1, 1) * 32767, true); }
+  const bytes = new Uint8Array(ab); let bin = ''; for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+  return btoa(bin);
+};
+
+// ------------------------------------------------------------------ init
+window.ready = (async () => {
+  await document.fonts.load('900 100px Inter'); await document.fonts.load('700 100px Inter'); await document.fonts.load('600 100px Inter');
+  await document.fonts.ready;
+  build(); window.seek(0); return true;
+})();
+</script>
+</body>
+</html>

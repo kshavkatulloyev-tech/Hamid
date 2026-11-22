@@ -1,0 +1,38 @@
+<template>
+  <style>
+    @font-face{font-family:"Mont";src:url("assets/fonts/mont-latin.woff2") format("woff2");font-weight:100 900;unicode-range:U+0000-00FF,U+2000-206F,U+2080-208F,U+2212;}
+@font-face{font-family:"Mont";src:url("assets/fonts/mont-cyrillic.woff2") format("woff2");font-weight:100 900;unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;}
+@font-face{font-family:"Mont";src:url("assets/fonts/mont-cyrext.woff2") format("woff2");font-weight:100 900;unicode-range:U+0460-052F;}
+    #root { position:absolute; inset:0; overflow:hidden; font-family:"Mont",sans-serif; background:#0B3C5D; }
+    #hook-photo { position:absolute; inset:0; }
+    #hook-photo img { width:100%; height:100%; object-fit:cover; object-position:40% 45%; }
+    #hook-shade { position:absolute; inset:0; background:linear-gradient(180deg, rgba(11,60,93,.92) 0%, rgba(11,60,93,.55) 38%, rgba(27,163,156,.35) 62%, rgba(11,60,93,.9) 100%); }
+    .hook-bub { position:absolute; border-radius:50%; background:radial-gradient(circle at 35% 30%, rgba(255,255,255,.95), rgba(120,220,255,.45) 45%, rgba(120,220,255,.08) 70%); }
+    #hook-tag { position:absolute; left:120px; top:330px; padding:14px 30px; border-radius:40px; background:#FFD23F; color:#0B3C5D; font-weight:800; font-size:38px; letter-spacing:.04em; }
+    #hook-title { position:absolute; left:116px; right:140px; top:420px; color:#fff; font-weight:900; font-size:128px; line-height:.98; letter-spacing:-.02em; text-shadow:0 8px 40px rgba(0,0,0,.35); }
+    #hook-title span { color:#7EF2E7; }
+    #hook-sub { position:absolute; left:120px; right:140px; top:730px; color:#fff; font-weight:700; font-size:62px; line-height:1.15; }
+  </style>
+  <div id="root" data-composition-id="hook" data-width="1080" data-height="1920">
+    <div id="hook-photo"><img src="assets/proc1.jpg" alt="" /></div>
+    <div id="hook-shade"></div>
+    <div id="hook-b1" class="hook-bub" style="width:150px;height:150px;left:820px;top:1080px"></div>
+    <div id="hook-b2" class="hook-bub" style="width:90px;height:90px;left:120px;top:1200px"></div>
+    <div id="hook-b3" class="hook-bub" style="width:60px;height:60px;left:900px;top:240px"></div>
+    <div id="hook-b4" class="hook-bub" style="width:110px;height:110px;left:620px;top:1450px"></div>
+    <div id="hook-tag">O<sub style="font-size:.8em">3</sub> · СОҒЛОМ ҲАЁТ</div>
+    <h1 id="hook-title">ОЗОНО-<br/><span>ТЕРАПИЯ</span></h1>
+    <p id="hook-sub">Бу нима ва<br/>қандай ўтади?</p>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#hook-photo", { scale: 1.12 }, { scale: 1.0, duration: 3.5, ease: "none" }, 0);
+    tl.fromTo("#hook-title", { y: 30, scale: 0.97 }, { y: 0, scale: 1, duration: 0.6, ease: "power3.out" }, 0);
+    tl.fromTo("#hook-tag", { x: -40, opacity: 0.6 }, { x: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, 0.1);
+    tl.fromTo("#hook-sub", { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, 0.55);
+    ["#hook-b1","#hook-b2","#hook-b3","#hook-b4"].forEach((s, i) => {
+      tl.fromTo(s, { y: 0, scale: 0.6 }, { y: -260 - i * 40, scale: 1, duration: 3.5, ease: "sine.inOut" }, 0);
+    });
+    window.__timelines["hook"] = tl;
+  </script>
+</template>

@@ -1,0 +1,41 @@
+<template>
+  <style>
+    @font-face{font-family:"Mont";src:url("assets/fonts/mont-latin.woff2") format("woff2");font-weight:100 900;unicode-range:U+0000-00FF,U+2000-206F,U+2080-208F,U+2212;}
+@font-face{font-family:"Mont";src:url("assets/fonts/mont-cyrillic.woff2") format("woff2");font-weight:100 900;unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;}
+@font-face{font-family:"Mont";src:url("assets/fonts/mont-cyrext.woff2") format("woff2");font-weight:100 900;unicode-range:U+0460-052F;}
+    #root { position:absolute; inset:0; overflow:hidden; font-family:"Mont",sans-serif; background:radial-gradient(120% 90% at 20% 0%, #FFE38A 0%, #FFB86B 40%, #FF7A7A 100%); }
+    #tm-title { position:absolute; left:120px; right:140px; top:320px; color:#6B1414; font-weight:900; font-size:86px; line-height:1; }
+    #tm-sub { position:absolute; left:120px; right:140px; top:420px; color:#5A1E1E; font-weight:700; font-size:44px; }
+    .tm-card { position:absolute; width:400px; height:370px; border-radius:36px; overflow:hidden; border:8px solid #fff; box-shadow:0 22px 50px rgba(120,30,30,.3); background:#fff; }
+    .tm-card img { width:100%; height:100%; object-fit:cover; object-position:50% 18%; }
+.tm-dot { position:absolute; border-radius:50%; background:rgba(255,255,255,.28); }
+  </style>
+  <div id="root" data-composition-id="team" data-width="1080" data-height="1920">
+    <div id="tm-d0" class="tm-dot" data-layout-ignore style="left:140px;top:1420px;width:260px;height:260px"></div>
+    <div id="tm-d1" class="tm-dot" data-layout-ignore style="left:560px;top:1520px;width:180px;height:180px"></div>
+    <div id="tm-d2" class="tm-dot" data-layout-ignore style="left:820px;top:1380px;width:120px;height:120px"></div>
+    <div id="tm-d3" class="tm-dot" data-layout-ignore style="left:330px;top:1700px;width:140px;height:140px"></div>
+    <div id="tm-d4" class="tm-dot" data-layout-ignore style="left:760px;top:1720px;width:240px;height:240px"></div>
+    <h2 id="tm-title">Бизнинг жамоа</h2>
+    <p id="tm-sub">Сизга ғамхўрлик қилишга тайёр</p>
+    <div id="tm-c1" class="tm-card" style="left:120px;top:510px"><img src="assets/nurse1.jpg" alt="" /></div>
+    <div id="tm-c2" class="tm-card" style="left:540px;top:510px"><img src="assets/staff4.jpg" alt="" style="object-position:50% 25%" /></div>
+    <div id="tm-c3" class="tm-card" style="left:120px;top:905px"><img src="assets/nurse3.jpg" alt="" /></div>
+    <div id="tm-c4" class="tm-card" style="left:540px;top:905px"><img src="assets/room.jpg" alt="" style="object-position:50% 30%" /></div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#tm-title", { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, 0);
+    tl.fromTo("#tm-sub", { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, 0.2);
+    ["#tm-c1","#tm-c2","#tm-c3","#tm-c4"].forEach((s, i) => {
+      tl.fromTo(s, { scale: 0.6, opacity: 0, rotation: i % 2 ? 6 : -6 }, { scale: 1, opacity: 1, rotation: i % 2 ? 1.5 : -1.5, duration: 0.55, ease: "back.out(1.5)" }, 0.5 + i * 0.3);
+      tl.fromTo(s + " img", { scale: 1.12 }, { scale: 1.0, duration: 4.5, ease: "none" }, 0.5);
+    });
+    tl.fromTo("#tm-d0", { y: 0, scale: 0.8 }, { y: -60, scale: 1, duration: 5, ease: "sine.inOut" }, 0);
+    tl.fromTo("#tm-d1", { y: 0, scale: 0.8 }, { y: -85, scale: 1, duration: 5, ease: "sine.inOut" }, 0);
+    tl.fromTo("#tm-d2", { y: 0, scale: 0.8 }, { y: -110, scale: 1, duration: 5, ease: "sine.inOut" }, 0);
+    tl.fromTo("#tm-d3", { y: 0, scale: 0.8 }, { y: -135, scale: 1, duration: 5, ease: "sine.inOut" }, 0);
+    tl.fromTo("#tm-d4", { y: 0, scale: 0.8 }, { y: -160, scale: 1, duration: 5, ease: "sine.inOut" }, 0);
+    window.__timelines["team"] = tl;
+  </script>
+</template>

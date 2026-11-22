@@ -1,0 +1,38 @@
+<template>
+  <style>
+    @font-face{font-family:"Mont";src:url("assets/fonts/mont-latin.woff2") format("woff2");font-weight:100 900;unicode-range:U+0000-00FF,U+2000-206F,U+2080-208F,U+2212;}
+@font-face{font-family:"Mont";src:url("assets/fonts/mont-cyrillic.woff2") format("woff2");font-weight:100 900;unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;}
+@font-face{font-family:"Mont";src:url("assets/fonts/mont-cyrext.woff2") format("woff2");font-weight:100 900;unicode-range:U+0460-052F;}
+    #root { position:absolute; inset:0; overflow:hidden; font-family:"Mont",sans-serif; background:radial-gradient(120% 80% at 80% 10%, #1BA39C 0%, #0E6E8C 45%, #0B3C5D 100%); }
+    .ct-ring { position:absolute; border-radius:50%; border:3px solid rgba(126,242,231,.35); }
+    #ct-kicker { position:absolute; left:140px; right:140px; top:330px; text-align:center; color:#FFD23F; font-weight:800; font-size:46px; letter-spacing:.05em; }
+    #ct-name { position:absolute; left:140px; right:140px; top:400px; text-align:center; color:#fff; font-weight:900; font-size:78px; line-height:1.05; }
+    #ct-btn { position:absolute; left:160px; width:760px; top:650px; height:130px; border-radius:65px; background:#FFD23F; color:#0B3C5D; font-weight:900; font-size:44px; display:flex; align-items:center; justify-content:center; box-shadow:0 20px 60px rgba(255,210,63,.35); }
+    #ct-phone-l { position:absolute; left:140px; right:140px; top:840px; text-align:center; color:#CFF7F3; font-weight:700; font-size:40px; }
+    #ct-phone { position:absolute; left:140px; right:140px; top:895px; text-align:center; color:#fff; font-weight:900; font-size:88px; letter-spacing:.01em; }
+    #ct-note { position:absolute; left:160px; right:160px; top:1060px; text-align:center; color:rgba(255,255,255,.78); font-weight:500; font-size:30px; line-height:1.35; }
+  </style>
+  <div id="root" data-composition-id="cta" data-width="1080" data-height="1920">
+    <div id="ct-r1" class="ct-ring" style="width:900px;height:900px;left:90px;top:400px" data-layout-ignore></div>
+    <div id="ct-r2" class="ct-ring" style="width:1300px;height:1300px;left:-110px;top:200px" data-layout-ignore></div>
+    <div id="ct-kicker">МАСЛАҲАТГА ЁЗИЛИНГ</div>
+    <h2 id="ct-name" data-var-text="clinic">Ҳабибулло Шамс клиникаси</h2>
+    <div id="ct-btn">Ҳозироқ қўнғироқ қилинг</div>
+    <div id="ct-phone-l">Телефон:</div>
+    <div id="ct-phone" data-var-text="phone">93 963 10 95</div>
+    <p id="ct-note">Қарши кўрсатмалар мавжуд. Муолажадан олдин шифокор билан маслаҳатлашинг.</p>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#ct-r1", { scale: 0.7, opacity: 0 }, { scale: 1.1, opacity: 1, duration: 5, ease: "sine.out" }, 0);
+    tl.fromTo("#ct-r2", { scale: 0.8, opacity: 0 }, { scale: 1.05, opacity: 1, duration: 5, ease: "sine.out" }, 0);
+    tl.fromTo("#ct-kicker", { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: "power3.out" }, 0);
+    tl.fromTo("#ct-name", { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, 0.15);
+    tl.fromTo("#ct-btn", { scale: 0.5, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.7)" }, 0.6);
+    tl.to("#ct-btn", { scale: 1.05, duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 5 }, 1.2);
+    tl.fromTo("#ct-phone-l", { opacity: 0 }, { opacity: 1, duration: 0.4 }, 0.9);
+    tl.fromTo("#ct-phone", { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, 1.0);
+    tl.fromTo("#ct-note", { opacity: 0 }, { opacity: 1, duration: 0.5 }, 1.5);
+    window.__timelines["cta"] = tl;
+  </script>
+</template>

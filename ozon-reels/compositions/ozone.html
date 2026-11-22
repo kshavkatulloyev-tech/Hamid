@@ -1,0 +1,43 @@
+<template>
+  <style>
+    @font-face{font-family:"Mont";src:url("assets/fonts/mont-latin.woff2") format("woff2");font-weight:100 900;unicode-range:U+0000-00FF,U+2000-206F,U+2080-208F,U+2212;}
+@font-face{font-family:"Mont";src:url("assets/fonts/mont-cyrillic.woff2") format("woff2");font-weight:100 900;unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;}
+@font-face{font-family:"Mont";src:url("assets/fonts/mont-cyrext.woff2") format("woff2");font-weight:100 900;unicode-range:U+0460-052F;}
+    #root { position:absolute; inset:0; overflow:hidden; font-family:"Mont",sans-serif; background:radial-gradient(120% 80% at 80% 10%, #1BA39C 0%, #0E6E8C 45%, #0B3C5D 100%); }
+    #oz-kicker { position:absolute; left:120px; top:320px; color:#FFD23F; font-weight:800; font-size:44px; letter-spacing:.06em; }
+    #oz-title { position:absolute; left:116px; top:380px; color:#fff; font-weight:900; font-size:124px; line-height:1; }
+    #oz-title sub { font-size:.55em; }
+    #oz-mol { position:absolute; left:150px; top:560px; transform-origin:390px 220px; width:800px; height:440px; }
+    .oz-atom { position:absolute; width:190px; height:190px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#0B3C5D; font-weight:900; font-size:84px; background:radial-gradient(circle at 35% 30%, #ffffff, #9FF3EA 55%, #3CC9C0 100%); box-shadow:0 20px 60px rgba(0,0,0,.25), inset 0 -10px 30px rgba(11,60,93,.18); }
+    .oz-bond { position:absolute; height:22px; border-radius:11px; background:#FFD23F; transform-origin:0 50%; }
+    #oz-l1 { position:absolute; left:120px; right:140px; top:990px; color:#fff; font-weight:800; font-size:60px; line-height:1.15; }
+    #oz-l2 { position:absolute; left:120px; right:140px; top:1150px; color:#CFF7F3; font-weight:600; font-size:40px; line-height:1.25; }
+  </style>
+  <div id="root" data-composition-id="ozone" data-width="1080" data-height="1920">
+    <div id="oz-kicker">БИЛАСИЗМИ?</div>
+    <h2 id="oz-title">Озон — O<sub>3</sub></h2>
+    <div id="oz-mol" data-layout-allow-overlap>
+      <div id="oz-b1" class="oz-bond" style="left:200px;top:290px;width:180px;transform:rotate(-38deg)"></div>
+      <div id="oz-b2" class="oz-bond" style="left:390px;top:180px;width:180px;transform:rotate(38deg)"></div>
+      <div id="oz-a1" class="oz-atom" style="left:40px;top:210px">O</div>
+      <div id="oz-a2" class="oz-atom" style="left:280px;top:20px">O</div>
+      <div id="oz-a3" class="oz-atom" style="left:520px;top:210px">O</div>
+    </div>
+    <p id="oz-l1">Кислороднинг<br/>фаол шакли</p>
+    <p id="oz-l2">Учта кислород атомидан иборат</p>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#oz-kicker", { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: "power3.out" }, 0);
+    tl.fromTo("#oz-title", { y: 50, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, 0.1);
+    ["#oz-a1","#oz-a2","#oz-a3"].forEach((s, i) => {
+      tl.fromTo(s, { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.8)" }, 0.5 + i * 0.18);
+    });
+    tl.fromTo("#oz-b1", { scaleX: 0 }, { scaleX: 1, duration: 0.35, ease: "power2.out" }, 1.0);
+    tl.fromTo("#oz-b2", { scaleX: 0 }, { scaleX: 1, duration: 0.35, ease: "power2.out" }, 1.15);
+    tl.fromTo("#oz-mol", { rotation: -4, y: 0 }, { rotation: 4, y: -20, duration: 4.5, ease: "sine.inOut" }, 0);
+    tl.fromTo("#oz-l1", { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, 1.5);
+    tl.fromTo("#oz-l2", { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, 2.0);
+    window.__timelines["ozone"] = tl;
+  </script>
+</template>

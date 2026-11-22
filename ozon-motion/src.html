@@ -1,0 +1,597 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>O2 → O3</title>
+<style>
+@font-face{font-family:'Inter';src:url(__F_LAT__) format('woff2');font-weight:100 900;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
+@font-face{font-family:'Inter';src:url(__F_CYR__) format('woff2');font-weight:100 900;unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;}
+@font-face{font-family:'Inter';src:url(__F_CYX__) format('woff2');font-weight:100 900;unicode-range:U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F;}
+html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:#0B0B0C;}
+#stage{position:absolute;left:0;top:0;width:1080px;height:1920px;overflow:hidden;background:#0B0B0C;}
+.d3{position:absolute;left:0;top:0;width:1080px;height:1920px;}
+.world{position:absolute;width:0;height:0;transform-style:preserve-3d;}
+.letter,.layer{position:absolute;left:0;top:0;transform-origin:0 0;transform-style:preserve-3d;}
+.layer{font-family:'Inter';font-weight:900;white-space:pre;line-height:1;}
+svg{position:absolute;left:0;top:0;}
+text{font-family:'Inter';}
+</style>
+</head>
+<body>
+<div id="stage">
+  <svg id="svg" width="1080" height="1920" viewBox="0 0 1080 1920">
+    <defs id="defs"></defs>
+    <g id="root"></g>
+  </svg>
+  <div id="type3d" class="d3"><div class="world" id="typeWorld"></div></div>
+  <svg id="svg2" width="1080" height="1920" viewBox="0 0 1080 1920"><g id="top"></g></svg>
+</div>
+<script>
+// ------------------------------------------------------------------ basics
+const W = 1080, H = 1920, CX = 540, CY = 740, DUR = 15, K = 1.5, OUT = DUR * K, DT = 1 / (120 * K);
+const COL = { k: '#0B0B0C', w: '#F2EFE8', t: '#17C2AE', b: '#2E4BFF', y: '#FFC83A' };
+const PH = { p1: '__P1__', p2: '__P2__', p3: '__P3__', p4: '__P4__' };
+const NS = 'http://www.w3.org/2000/svg';
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const lerp = (a, b, x) => a + (b - a) * x;
+const seg = (t, t0, d) => clamp((t - t0) / d);
+const eOut = x => x <= 0 ? 0 : x >= 1 ? 1 : (1 - Math.pow(2, -10 * x)) / (1 - Math.pow(2, -10));
+const eIn = x => x <= 0 ? 0 : x >= 1 ? 1 : (Math.pow(2, 10 * x) - 1) / (Math.pow(2, 10) - 1);
+const eIO = x => x < 0.5 ? eIn(2 * x) / 2 : 0.5 + eOut(2 * x - 1) / 2;
+const spr = (dt, w = 16) => dt <= 0 ? 0 : 1 - (1 + w * dt) * Math.exp(-w * dt);
+const hex2rgb = h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16));
+const mixC = (a, b, x) => { const A = hex2rgb(a), B = hex2rgb(b); return `rgb(${A.map((v, i) => Math.round(lerp(v, B[i], clamp(x)))).join(',')})`; };
+const $ = id => document.getElementById(id);
+function el(tag, attrs = {}, parent = $('root')) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  parent.appendChild(e); return e;
+}
+function set(e, attrs) { for (const k in attrs) e.setAttribute(k, attrs[k]); }
+function show(e, v) { e.style.display = v ? '' : 'none'; }
+function hdiv(cls, parent) { const d = document.createElement('div'); d.className = cls; parent.appendChild(d); return d; }
+let blurN = 0;
+function blur(e, dx, dy) {
+  const sx = Math.min(30, Math.abs(dx) * 0.55), sy = Math.min(30, Math.abs(dy) * 0.55);
+  if (sx < 0.4 && sy < 0.4) { e.removeAttribute('filter'); return; }
+  if (!e._f) {
+    const id = 'bl' + (blurN++);
+    const f = el('filter', { id, filterUnits: 'userSpaceOnUse', x: -300, y: -300, width: 1680, height: 2520 }, $('defs'));
+    e._g = el('feGaussianBlur', { stdDeviation: '0 0' }, f); e._f = id;
+  }
+  e._g.setAttribute('stdDeviation', `${sx.toFixed(2)} ${sy.toFixed(2)}`);
+  e.setAttribute('filter', `url(#${e._f})`);
+}
+let clipN = 0;
+function clipRect(parent) { const id = 'c' + (clipN++); const cp = el('clipPath', { id }, $('defs')); const r = el('rect', { x: 0, y: 0, width: W, height: H }, cp); const g = el('g', { 'clip-path': `url(#${id})` }, parent); return { g, r }; }
+
+// ------------------------------------------------------------------ type
+const CAP = 0.727;
+let measurer;
+function charW(ch, size, weight) {
+  if (ch === ' ') return 0.27 * size;
+  measurer.setAttribute('font-size', size); measurer.setAttribute('font-weight', weight);
+  measurer.textContent = ch; return measurer.getComputedTextLength();
+}
+function makeWord(str, size, { cy = CY, cx = CX, track = -0.02, weight = 900, fill = COL.w, parent = $('root') } = {}) {
+  const g = el('g', {}, parent);
+  const chars = [...str]; const tr = track * size; let x = 0; const L = [];
+  chars.forEach((ch, i) => {
+    const w = charW(ch, size, weight);
+    const t = el('text', { 'font-size': size, 'font-weight': weight, fill, x: 0, y: 0 }, g);
+    t.textContent = ch; L.push({ ch, el: t, x, w }); x += w + (i < chars.length - 1 ? tr : 0);
+  });
+  const width = x;
+  L.forEach(l => { l.x0 = cx - width / 2 + l.x; l.cx = l.x0 + l.w / 2; });
+  return { g, L, width, size, capH: CAP * size, base: cy + CAP * size / 2, cy };
+}
+function place(l, x, y, ops = '') { l.el.setAttribute('transform', `translate(${x.toFixed(2)},${y.toFixed(2)}) ${ops}`); }
+// "ОЗОН" with geometric rings for the О's
+function makeOzon(size, cy, ringCol, parent) {
+  const capH = CAP * size, ringW = capH * 1.03, sw = capH * 0.235, tr = -0.01 * size;
+  const g = el('g', {}, parent);
+  const spec = ['O', 'З', 'O', 'Н']; let x = 0; const items = [];
+  spec.forEach((s, i) => {
+    let it;
+    if (s === 'O') { const c = el('circle', { fill: 'none', stroke: ringCol, 'stroke-width': sw, r: (ringW - sw) / 2 }, g); it = { ring: true, el: c, w: ringW, x }; }
+    else { const w = charW(s, size, 900); const t = el('text', { 'font-size': size, 'font-weight': 900, fill: COL.w, x: 0, y: 0 }, g); t.textContent = s; it = { ring: false, el: t, w, x }; }
+    items.push(it); x += it.w + (i < 3 ? tr : 0);
+  });
+  items.forEach(it => { it.x0 = CX - x / 2 + it.x; it.cx = it.x0 + it.w / 2; });
+  return { g, items, width: x, capH, ringW, sw, cy, base: cy + capH / 2 };
+}
+
+// ------------------------------------------------------------------ build
+let S = {};
+function img(href, parent) { return el('image', { href, preserveAspectRatio: 'xMidYMid slice' }, parent); }
+function build() {
+  measurer = el('text', { x: -9999, y: -9999 }, $('defs'));
+  const R = $('root');
+
+  // ---- HOOK
+  S.hook = el('g', {}, R);
+  const hc = clipRect(S.hook); S.hookClip = hc.r;
+  S.oz1 = makeOzon(230, CY - 40, COL.w, hc.g);
+  // per-item emergence clips
+  S.oz1.items.forEach((it, i) => {
+    if (i === 0) return;
+    const cp = el('clipPath', { id: 'oz1c' + i }, $('defs')); it.clip = el('rect', { x: 0, y: 0, width: W, height: H }, cp);
+    const g = el('g', { 'clip-path': `url(#oz1c${i})` }, S.oz1.g); g.appendChild(it.el);
+  });
+  const tc = clipRect(S.hook); S.terClip = tc.r;
+  S.ter = makeWord('ТЕРАПИЯ', 112, { cy: CY + 150, fill: COL.t, parent: tc.g });
+  S.tag = el('g', {}, S.hook);
+  S.tagPill = el('rect', { fill: COL.y, rx: 34, height: 68 }, S.tag);
+  S.tagTxt = el('text', { 'font-size': 36, 'font-weight': 800, fill: COL.k, 'text-anchor': 'middle', x: CX, y: CY - 255 }, S.tag);
+  S.tagTxt.textContent = 'БУ НИМА?';
+  S.tagW = 300;
+
+  // ---- KINETIC
+  S.kin = el('g', {}, R);
+  const kc = clipRect(S.kin); S.kisClip = kc.r;
+  S.KIS = makeWord('КИСЛОРОД', 128, { parent: kc.g });
+  S.ATOM = makeWord('+1 АТОМ', 140, { parent: S.kin });
+  S.ATOM.L[0].el.setAttribute('fill', COL.y); S.ATOM.L[1].el.setAttribute('fill', COL.y);
+  S.EQ = makeWord('=', 300, { parent: S.kin, fill: COL.y });
+  S.oz2 = makeOzon(230, CY, COL.t, S.kin);
+
+  // ---- MOLECULE (2D + projected 3D)
+  S.mol = el('g', {}, R);
+  S.bond = el('polyline', { fill: 'none', stroke: COL.t, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, S.mol);
+  S.atomLayer = el('g', {}, S.mol);
+  S.atoms = [0, 1, 2].map(i => {
+    const g = el('g', {}, S.atomLayer);
+    const disc = el('circle', {}, g);
+    const cpid = 'ac' + i; const cp = el('clipPath', { id: cpid }, $('defs')); const cc = el('circle', {}, cp);
+    const inner = el('g', { 'clip-path': `url(#${cpid})` }, g);
+    const shade = el('path', { fill: '#000', 'fill-opacity': 0.3, 'fill-rule': 'evenodd' }, inner);
+    const pcp = 'pc' + i; const pc = el('clipPath', { id: pcp }, $('defs')); const pcc = el('circle', {}, pc);
+    const photo = img([PH.p1, PH.p2, PH.p3][i], el('g', { 'clip-path': `url(#${pcp})` }, g));
+    return { g, disc, cc, shade, pcc, photo };
+  });
+  S.o3 = el('g', {}, R);
+  S.o3t = el('text', { 'font-size': 96, 'font-weight': 900, fill: COL.y, 'text-anchor': 'middle', x: 0, y: 0 }, S.o3);
+  S.o3t.innerHTML = 'O<tspan font-size="56" dy="18">3</tspan>';
+
+  // ---- STAFF ROWS
+  S.rows = el('g', {}, R);
+  const RT = [['Тажрибали', 'ҳамширалар'], ['Стерил', 'шароит'], ['Шахсий', 'ёндашув']];
+  S.rowY = [520, 760, 1000];
+  S.rowEls = RT.map((pair, i) => {
+    const c = clipRect(S.rows);
+    const t1 = el('text', { 'font-size': 54, 'font-weight': 900, fill: COL.w, x: 0, y: 0 }, c.g); t1.textContent = pair[0];
+    const t2 = el('text', { 'font-size': 54, 'font-weight': 900, fill: COL.t, x: 0, y: 0 }, c.g); t2.textContent = pair[1];
+    const rule = el('rect', { fill: COL.y, height: 8 }, S.rows);
+    return { clip: c.r, t1, t2, rule };
+  });
+
+  // ---- UI CARD
+  S.ui = el('g', {}, R);
+  const cardHalf = (dir) => { const x0 = CX, L = 150, Rr = 930, T = 330, B = 1250, r = 48;
+    return dir < 0 ? `M${x0},${B} H${L + r} A${r},${r} 0 0 1 ${L},${B - r} V${T + r} A${r},${r} 0 0 1 ${L + r},${T} H${x0}`
+                   : `M${x0},${B} H${Rr - r} A${r},${r} 0 0 0 ${Rr},${B - r} V${T + r} A${r},${r} 0 0 0 ${Rr - r},${T} H${x0}`; };
+  S.cardL = el('path', { d: cardHalf(-1), fill: 'none', stroke: COL.w, 'stroke-width': 3 }, S.ui);
+  S.cardR = el('path', { d: cardHalf(1), fill: 'none', stroke: COL.w, 'stroke-width': 3 }, S.ui);
+  S.cardLen = S.cardL.getTotalLength();
+  const avc = el('clipPath', { id: 'avc' }, $('defs')); S.avCirc = el('circle', { cx: 250, cy: 440, r: 0 }, avc);
+  S.avatar = img(PH.p4, el('g', { 'clip-path': 'url(#avc)' }, S.ui)); set(S.avatar, { x: 200, y: 390, width: 100, height: 100 });
+  const hcl = clipRect(S.ui); set(hcl.r, { x: 300, y: 380, width: 640, height: 120 });
+  S.h1 = el('text', { 'font-size': 46, 'font-weight': 900, fill: COL.w, x: 328, y: 0 }, hcl.g); S.h1.textContent = 'Озонотерапия';
+  S.h2 = el('text', { 'font-size': 30, 'font-weight': 700, fill: COL.t, x: 328, y: 0 }, hcl.g); S.h2.textContent = 'Мутахассис маслаҳати';
+  S.div = el('rect', { fill: COL.w, 'fill-opacity': 0.25, height: 2, y: 545 }, S.ui);
+  S.lbl1 = el('text', { 'font-size': 28, 'font-weight': 700, fill: COL.w, 'fill-opacity': 0.7, x: 190, y: 615, 'letter-spacing': 3 }, S.ui); S.lbl1.textContent = 'КУННИ ТАНЛАНГ';
+  S.lbl2 = el('text', { 'font-size': 28, 'font-weight': 700, fill: COL.w, 'fill-opacity': 0.7, x: 190, y: 845, 'letter-spacing': 3 }, S.ui); S.lbl2.textContent = 'ВАҚТНИ ТАНЛАНГ';
+  S.daySel = el('rect', { fill: COL.t, rx: 24, width: 120, height: 120, y: 640 }, S.ui);
+  S.days = ['Ду', 'Се', 'Чо', 'Па', 'Жу'].map((d, i) => {
+    const g = el('g', {}, S.ui); const x = 190 + i * 145;
+    const r = el('rect', { x: -60, y: -60, width: 120, height: 120, rx: 24, fill: 'none', stroke: COL.w, 'stroke-width': 2.5 }, g);
+    const t = el('text', { 'font-size': 38, 'font-weight': 800, fill: COL.w, 'text-anchor': 'middle', x: 0, y: 13 }, g); t.textContent = d;
+    return { g, x: x + 60, y: 700 };
+  });
+  S.timeSel = el('rect', { fill: COL.t, rx: 24, width: 220, height: 96, y: 872 }, S.ui);
+  S.times = ['10:00', '14:00', '16:00'].map((d, i) => {
+    const g = el('g', {}, S.ui); const x = 190 + i * 240;
+    el('rect', { x: -110, y: -48, width: 220, height: 96, rx: 24, fill: 'none', stroke: COL.w, 'stroke-width': 2.5 }, g);
+    const t = el('text', { 'font-size': 38, 'font-weight': 800, fill: COL.w, 'text-anchor': 'middle', x: 0, y: 13 }, g); t.textContent = d;
+    t.style.fontVariantNumeric = 'tabular-nums';
+    return { g, x: x + 110, y: 920 };
+  });
+  S.pillG = el('g', {}, R);
+  S.pillDisc = el('circle', { fill: COL.b }, S.pillG);
+  S.pill = el('rect', {}, S.pillG);
+  S.pillTxt = el('text', { 'font-size': 40, 'font-weight': 900, fill: COL.k, 'text-anchor': 'middle', x: 0, y: 14 }, S.pillG); S.pillTxt.textContent = 'Маслаҳатга ёзилиш';
+  S.cursor = el('g', {}, R);
+  el('circle', { r: 24, fill: COL.w }, S.cursor); el('circle', { r: 40, fill: 'none', stroke: COL.w, 'stroke-width': 3 }, S.cursor);
+
+  // ---- TITLE
+  S.TS = 124; S.lineCY = [470, 620, 770];
+  S.tLines = ['ҲАБИБУЛЛО', 'ШАМС', 'КЛИНИКАСИ'].map((s, i) => makeWord(s, S.TS, { cy: S.lineCY[i], parent: el('g', {}, $('top')) }));
+  S.title2d = S.tLines.map(w => w.g);
+  S.tw = $('typeWorld'); S.tw.style.left = CX + 'px'; S.tw.style.top = '620px';
+  S.tletters = [];
+  S.tLines.forEach((w, li) => w.L.forEach((l, i) => {
+    const d = hdiv('letter', S.tw); const layers = []; const NL = 14;
+    for (let k = 0; k < NL; k++) { const s = hdiv('layer', d); s.textContent = l.ch; s.style.fontSize = S.TS + 'px'; s.style.color = k === 0 ? COL.w : (k < NL - 5 ? COL.t : COL.b); layers.push(s); }
+    layers.slice().reverse().forEach(s => d.appendChild(s));
+    S.tletters.push({ el: d, layers, l, li, i });
+  }));
+  S.ybars = [0, 1, 2].map(() => el('rect', { fill: COL.y }, $('top')));
+  S.under = el('rect', { fill: COL.y }, $('top'));
+  const pc = clipRect($('top')); S.phClip = pc.r;
+  S.phone = el('text', { 'font-size': 92, 'font-weight': 900, fill: COL.w, 'text-anchor': 'middle', x: CX, y: 0 }, pc.g); S.phone.textContent = '93 963 10 95';
+  S.phone.style.fontVariantNumeric = 'tabular-nums';
+  const cc2 = clipRect($('top')); S.ctaClip = cc2.r;
+  S.cta = el('text', { 'font-size': 44, 'font-weight': 900, fill: COL.y, 'text-anchor': 'middle', x: CX, y: 0 }, cc2.g); S.cta.textContent = 'Маслаҳатга ёзилинг';
+  S.disc = el('text', { 'font-size': 26, 'font-weight': 600, fill: COL.w, 'fill-opacity': 0.72, 'text-anchor': 'middle', x: CX, y: 0 }, cc2.g);
+  S.disc.textContent = 'Қарши кўрсатмалар мавжуд. Шифокор билан маслаҳатлашинг.';
+  S.endG = [S.title2d, S.under, S.phone, S.cta, S.disc];
+  S.loopRing = el('circle', { fill: 'none', stroke: COL.w }, $('top'));
+}
+
+// ------------------------------------------------------------------ HOOK 0–2.2
+function ozItemX(t, i) {
+  const it = S.oz1.items;
+  const r0 = lerp(CX, it[0].cx, eOut(seg(t, 0, 0.42)));
+  if (i === 0) return r0;
+  if (i === 1) { const B = r0 + it[0].w / 2; return lerp(B - it[1].w / 2, it[1].cx, eOut(seg(t, 0.04, 0.4))); }
+  if (i === 2) { const B = it[1].x0 + it[1].w; return lerp(B - it[2].w / 2, it[2].cx, eOut(seg(t, 0.5, 0.36))); }
+  const B = it[2].x0 + it[2].w; return lerp(B - it[3].w / 2, it[3].cx, eOut(seg(t, 0.6, 0.36)));
+}
+function drawHook(t) {
+  const on = t < 2.3; show(S.hook, on); if (!on) return;
+  const oz = S.oz1;
+  set(S.hookClip, { height: oz.base + 2 });
+  const sink = (tt, i) => oz.capH * 1.1 * eIn(seg(tt, 2.0 + i * 0.02, 0.15));
+  oz.items.forEach((it, i) => {
+    const x = ozItemX(t, i), px = ozItemX(t - DT, i);
+    const vis = i === 0 || i === 1 || t >= 0.5 - (i === 2 ? 0 : -0.1);
+    show(it.el, i < 2 || t >= (i === 2 ? 0.5 : 0.6));
+    const dy = sink(t, i);
+    if (it.ring) set(it.el, { cx: x, cy: oz.cy + dy });
+    else { it.el.setAttribute('transform', `translate(${(x - it.w / 2).toFixed(2)},${(oz.base + dy).toFixed(2)})`); }
+    blur(it.el, x - px, dy - sink(t - DT, i));
+    if (it.clip) {
+      const B = i === 1 ? ozItemX(t, 0) + oz.items[0].w / 2 : (i === 2 ? oz.items[1].x0 + oz.items[1].w : oz.items[2].x0 + oz.items[2].w);
+      set(it.clip, { x: B, width: W });
+    }
+  });
+  // ТЕРАПИЯ rises letter by letter from its baseline
+  set(S.terClip, { height: S.ter.base + 2 });
+  show(S.ter.g, t >= 1.0);
+  S.ter.L.forEach((l, i) => {
+    const sy = Math.max(0.001, spr(t - (1.0 + i * 0.03), 20));
+    const dy = S.ter.capH * 1.1 * eIn(seg(t, 2.02 + i * 0.015, 0.15));
+    place(l, l.x0, S.ter.base + dy, `scale(1,${sy.toFixed(3)})`);
+  });
+  // tag wipes in on beat 4
+  const tw = S.tagW * eOut(seg(t, 1.5, 0.3)) * (1 - eIn(seg(t, 2.0, 0.14)));
+  show(S.tag, tw > 1);
+  set(S.tagPill, { x: CX - tw / 2, y: CY - 300, width: tw, rx: Math.min(34, tw / 2) });
+  const ts = clamp((tw - 200) / 100);
+  set(S.tagTxt, { transform: `translate(${CX},${CY - 255}) scale(${ts.toFixed(3)},1) translate(${-CX},${-(CY - 255)})` });
+}
+
+// ------------------------------------------------------------------ KINETIC 2–4
+function drawKin(t) {
+  const on = t >= 2.0 && t < 4.0; show(S.kin, on); if (!on) return;
+  // КИСЛОРОД hinges up out of the baseline, conveyor out
+  set(S.kisClip, { height: S.KIS.base + 3 });
+  const kx = (tt, i) => -W * 1.1 * eIO(seg(tt, 2.5 + i * 0.012, 0.4));
+  show(S.KIS.g, t < 2.95);
+  S.KIS.L.forEach((l, i) => {
+    const rot = 90 * (1 - spr(t - (2.1 + i * 0.03), 18));
+    place(l, l.x0 + kx(t, i), S.KIS.base, `rotate(${rot.toFixed(2)})`);
+    blur(l.el, kx(t, i) - kx(t - DT, i), 0);
+  });
+  // +1 АТОМ conveyor in, squash out
+  const ax = (tt, i) => W * 1.1 * (1 - eIO(seg(tt, 2.5 + i * 0.012, 0.4)));
+  show(S.ATOM.g, t >= 2.5 && t < 3.2);
+  S.ATOM.L.forEach((l, i) => {
+    const sy = Math.max(0.001, 1 - eIn(seg(t, 3.0 + i * 0.015, 0.1)));
+    place(l, l.x0 + ax(t, i), S.ATOM.base, `scale(1,${sy.toFixed(3)})`);
+    blur(l.el, ax(t, i) - ax(t - DT, i), 0);
+  });
+  // = rises, then its bars shoot apart vertically
+  show(S.EQ.g, t >= 3.1 && t < 3.72);
+  { const l = S.EQ.L[0]; const sy = Math.max(0.001, spr(t - 3.1, 20) * (1 - eIn(seg(t, 3.5, 0.16))));
+    const sx = 1 + 1.6 * eIn(seg(t, 3.5, 0.16));
+    place(l, l.x0, CY, `translate(${l.w / 2},0) scale(${sx.toFixed(3)},${sy.toFixed(3)}) translate(${-l.w / 2},${S.EQ.capH / 2})`); }
+  // ОЗОН slams in (alternating from above / below); З and Н drop; rings fill into atoms
+  const oz = S.oz2;
+  show(oz.g, t >= 3.52);
+  const fill = eOut(seg(t, 3.78, 0.2)), gather = eIO(seg(t, 3.76, 0.24));
+  oz.items.forEach((it, i) => {
+    const fy = (tt) => (i % 2 ? 1 : -1) * 1100 * (1 - eOut(seg(tt, 3.52 + i * 0.025, 0.2)));
+    const drop = (tt) => it.ring ? 0 : 1300 * eIn(seg(tt, 3.76, 0.2));
+    const y = fy(t) + drop(t);
+    if (it.ring) {
+      const tx = lerp(it.cx, CX + (i === 0 ? -110 : 110), gather), ty = lerp(oz.cy, CY, gather) + fy(t);
+      const R = oz.ringW / 2, hole = Math.max(0, (R - oz.sw) * (1 - fill));
+      set(it.el, { cx: tx, cy: ty, r: (R + hole) / 2, 'stroke-width': R - hole, fill: hole < 0.5 ? COL.t : 'none' });
+      blur(it.el, 0, fy(t) - fy(t - DT));
+    } else {
+      it.el.setAttribute('transform', `translate(${(it.x0).toFixed(2)},${(oz.base + y).toFixed(2)})`);
+      blur(it.el, 0, y - (fy(t - DT) + drop(t - DT)));
+    }
+  });
+}
+
+// ------------------------------------------------------------------ MOLECULE 4–8
+function mol2D(t) { // positions (screen) + radius + colour during 4–6
+  const s9 = spr(t - 4.5, 14), rot = 120 * spr(t - 5.0, 14);
+  const pts = [[-lerp(110, 170, s9), lerp(0, 35, s9)], [lerp(110, 170, s9), lerp(0, 35, s9)], [0, lerp(0, -70, s9)]];
+  const rad = [86, 86, 86 * s9];
+  const a = rot * Math.PI / 180, ca = Math.cos(a), sa = Math.sin(a);
+  return { pts: pts.map(([x, y]) => [x * ca - y * sa, x * sa + y * ca]), rad, col: mixC(COL.t, COL.b, spr(t - 5.0, 14)), bondLen: eOut(seg(t, 4.0, 0.3)) };
+}
+const ROWX = 250;
+function molState(t) {
+  const base = mol2D(Math.min(t, 6.0));
+  let P = base.pts.map(([x, y]) => [x, y, 0]);
+  let rad = base.rad.slice();
+  const shade = 0.33 * eOut(seg(t, 5.5, 0.3)) * (1 - eOut(seg(t, 7.5, 0.3)));
+  if (t < 6.0) return { scr: base.pts.map(([x, y], i) => ({ x: CX + x, y: CY + y, r: rad[i], z: 0 })), col: base.col, bond: 1, bondLen: base.bondLen, shade };
+  const ay = (200 * spr(t - 6.0, 10) + 160 * spr(t - 7.0, 12)) * Math.PI / 180;
+  const ax = (28 * spr(t - 6.5, 12) - 28 * spr(t - 7.0, 12)) * Math.PI / 180;
+  const invD = (1 / 1100) * spr(t - 6.0, 10) * (1 - spr(t - 7.5, 14));
+  const ex = 1 + 0.7 * spr(t - 7.0, 12), rr = lerp(86, 105, spr(t - 7.0, 12));
+  const push = 1 + 0.25 * spr(t - 6.0, 10) - 0.25 * spr(t - 7.0, 12);
+  const scr = P.map(([x, y, z], i) => {
+    x *= ex; y *= ex;
+    const x1 = x * Math.cos(ay) + z * Math.sin(ay), z1 = -x * Math.sin(ay) + z * Math.cos(ay);
+    const y2 = y * Math.cos(ax) - z1 * Math.sin(ax), z2 = y * Math.sin(ax) + z1 * Math.cos(ax);
+    const f = push / (1 - z2 * invD);
+    return { x: CX + x1 * f, y: CY + y2 * f, r: rr * f, z: z2 };
+  });
+  // fly to the staff column 7.5–7.92
+  const order = [1, 2, 0]; // atom i -> row order[i]
+  const fly = scr.map((s, i) => { const e = eIO(seg(t, 7.5 + i * 0.03, 0.4)); return { x: lerp(s.x, ROWX, e), y: lerp(s.y, S.rowY[order[i]], e), r: lerp(s.r, 105, e), z: s.z }; });
+  return { scr: fly, col: COL.b, bond: 1 - eIn(seg(t, 7.0, 0.2)), bondLen: 1, shade };
+}
+function drawMol(t) {
+  const on = t >= 4.0 && t < 10.0; show(S.mol, on); if (!on) return;
+  // after 7.5 the atoms continue as the staff circles (handled here until 10.0)
+  let st = molState(Math.min(t, 7.99));
+  if (t >= 8.0) st = { scr: [1, 2, 0].map((row, i) => ({ x: ROWX, y: S.rowY[row], r: 105, z: 0 })), col: COL.b, bond: 0, shade: 0 };
+  // staff circles merge into the pill 9.5–9.85
+  const mg = eIO(seg(t, 9.55, 0.3));
+  st.scr = st.scr.map((s, i) => ({ x: lerp(s.x, CX, mg), y: lerp(s.y, 1150, mg), r: lerp(s.r, 60, mg), z: s.z }));
+  show(S.atomLayer, t < 9.86);
+  // bonds
+  const sc = st.scr;
+  const bw = 24 * st.bond * (t < 6.0 ? 1 : 1);
+  show(S.bond, bw > 0.3);
+  if (t < 4.5) {
+    const L = st.bondLen, mx = (sc[0].x + sc[1].x) / 2, my = (sc[0].y + sc[1].y) / 2;
+    set(S.bond, { points: `${lerp(mx, sc[0].x, L)},${lerp(my, sc[0].y, L)} ${lerp(mx, sc[1].x, L)},${lerp(my, sc[1].y, L)}` });
+  } else set(S.bond, { points: `${sc[0].x},${sc[0].y} ${sc[2].x},${sc[2].y} ${sc[1].x},${sc[1].y}` });
+  set(S.bond, { 'stroke-width': bw, stroke: st.col });
+  // depth order
+  const idx = [0, 1, 2].sort((a, b) => sc[a].z - sc[b].z);
+  idx.forEach(i => S.atomLayer.appendChild(S.atoms[i].g));
+  S.atoms.forEach((a, i) => {
+    const s = sc[i]; const r = Math.max(0.01, s.r);
+    set(a.disc, { cx: s.x, cy: s.y, r, fill: st.col });
+    set(a.cc, { cx: s.x, cy: s.y, r });
+    const o = r * st.shade, circ = (x, y, rr) => `M${x - rr},${y}a${rr},${rr} 0 1,0 ${2 * rr},0a${rr},${rr} 0 1,0 ${-2 * rr},0`;
+    show(a.shade, st.shade > 0.005);
+    set(a.shade, { d: circ(s.x, s.y, r) + circ(s.x - o, s.y - o, r * 1.02) });
+    // photo reveal 7.6 – 8.0, hide during merge
+    const rev = eOut(seg(t, 7.62 + i * 0.07, 0.3)) * (1 - eOut(seg(t, 9.5, 0.18)));
+    const pr = Math.max(0, (r - 9) * rev);
+    show(a.photo, pr > 0.5);
+    set(a.pcc, { cx: s.x, cy: s.y, r: pr });
+    set(a.photo, { x: s.x - r, y: s.y - r, width: 2 * r, height: 2 * r });
+  });
+  // O3 label
+  const lab = spr(t - 4.75, 22) * (1 - eIn(seg(t, 6.0, 0.12)));
+  show(S.o3, lab > 0.01 && t < 6.2);
+  set(S.o3, { transform: `translate(${CX},${CY + 330}) scale(${lab.toFixed(3)})` });
+}
+// shading done as a darker disc shifted away from the light: implement via clip + mask trick
+// (the shade circle covers the atom except a crescent on the lit side)
+
+// ------------------------------------------------------------------ STAFF ROWS 8–10
+function drawRows(t) {
+  const on = t >= 7.9 && t < 9.8; show(S.rows, on); if (!on) return;
+  S.rowEls.forEach((r, i) => {
+    const y = S.rowY[i], t0 = 8.0 + i * 0.5;
+    const up = spr(t - t0, 18), out = eIn(seg(t, 9.5 + i * 0.02, 0.14));
+    const sy1 = Math.max(0.001, up * (1 - out)), sy2 = Math.max(0.001, spr(t - t0 - 0.06, 18) * (1 - out));
+    set(r.t1, { transform: `translate(400,${y - 8}) scale(1,${sy1.toFixed(3)})` });
+    set(r.t2, { transform: `translate(400,${y + 54}) scale(1,${sy2.toFixed(3)})` });
+    const rl = 90 * eOut(seg(t, t0, 0.3)) * (1 - out);
+    set(r.rule, { x: 400, y: y - 82, width: rl });
+  });
+}
+
+// ------------------------------------------------------------------ UI 9.8–12
+function uiXf(t) {
+  const x = seg(t, 11.75, 0.25), e = x * x * x; const sc = Math.exp(Math.log(18) * e);
+  return { s: `translate(${CX},${lerp(1150, 960, e)}) scale(${sc}) translate(${-CX},-1150)`, sc };
+}
+function drawUI(t) {
+  const on = t >= 10.0 && t < 12.0; show(S.ui, on);
+  const pon = t >= 9.85 && t < 12.0; show(S.pillG, pon);
+  show(S.cursor, t >= 11.45 && t < 11.78);
+  const X = uiXf(t);
+  if (pon) {
+    const g = eOut(seg(t, 9.85, 0.32)), w = lerp(0, 640, g), hh = Math.min(120, w);
+    const press = 1 - 0.06 * eOut(seg(t, 11.62, 0.05)) * (1 - eOut(seg(t, 11.67, 0.1)));
+    set(S.pill, { x: CX - w / 2, y: 1150 - hh / 2, width: w, height: hh, rx: hh / 2, fill: COL.y });
+    const br = 60 * (1 - eOut(seg(t, 9.95, 0.2)));
+    show(S.pillDisc, br > 0.3); set(S.pillDisc, { cx: CX, cy: 1150, r: Math.max(0.01, br) });
+    S.pillG.setAttribute('transform', X.s + ` translate(${CX},1150) scale(${press}) translate(${-CX},-1150)`);
+    const ts = clamp((w - 500) / 140) * Math.max(0.001, 1 - eIn(seg(t, 11.72, 0.08)));
+    set(S.pillTxt, { transform: `translate(${CX},1150) scale(1,${ts.toFixed(3)})` });
+  }
+  if (t >= 11.45 && t < 11.78) {
+    const e = eOut(seg(t, 11.45, 0.17));
+    S.cursor.setAttribute('transform', `translate(${lerp(820, CX + 120, e)},${lerp(1420, 1165, e)}) scale(${1 - 0.15 * eOut(seg(t, 11.62, 0.05))})`);
+  }
+  if (!on) return;
+  S.ui.setAttribute('transform', X.s);
+  const d = eOut(seg(t, 10.0, 0.45));
+  [S.cardL, S.cardR].forEach(p => set(p, { 'stroke-dasharray': `${S.cardLen * d} ${S.cardLen}` }));
+  set(S.avCirc, { r: 50 * spr(t - 10.05, 20) });
+  const hu = eOut(seg(t, 10.08, 0.3));
+  set(S.h1, { y: lerp(500, 435, hu) }); set(S.h2, { y: lerp(560, 482, eOut(seg(t, 10.14, 0.3))) });
+  const dv = 700 * eOut(seg(t, 10.15, 0.35)); set(S.div, { x: CX - dv / 2, width: dv });
+  // days
+  show(S.lbl1, t >= 10.5); show(S.lbl2, t >= 11.0);
+  S.days.forEach((dd, i) => { const s = eOut(seg(t, 10.5 + i * 0.04, 0.22)); dd.g.setAttribute('transform', `translate(${dd.x},${dd.y}) scale(${Math.max(0.001, s)})`); show(dd.g, s > 0.001); });
+  const ds = eIO(seg(t, 10.78, 0.22)); show(S.daySel, t >= 10.7);
+  const dsc = spr(t - 10.7, 22);
+  set(S.daySel, { x: lerp(190, 190 + 2 * 145, ds) + 60 - 60 * dsc, y: 700 - 60 * dsc, width: 120 * dsc, height: 120 * dsc });
+  S.times.forEach((dd, i) => { const s = eOut(seg(t, 11.0 + i * 0.05, 0.22)); dd.g.setAttribute('transform', `translate(${dd.x},${dd.y}) scale(${Math.max(0.001, s)})`); show(dd.g, s > 0.001); });
+  const tsel = eIO(seg(t, 11.28, 0.2)); show(S.timeSel, t >= 11.2);
+  const tsc = spr(t - 11.2, 22);
+  set(S.timeSel, { x: lerp(190, 430, tsel) + 110 - 110 * tsc, y: 920 - 48 * tsc, width: 220 * tsc, height: 96 * tsc });
+}
+
+// ------------------------------------------------------------------ TITLE 12–15
+function titleWorld(t) {
+  const ry = -24 * spr(t - 12.5, 9) + 46 * spr(t - 13.0, 10) - 22 * spr(t - 13.5, 14);
+  const rx = 26 * spr(t - 13.0, 10) - 26 * spr(t - 13.5, 14);
+  const invP = (1 / 1300) * (1 - spr(t - 13.5, 14));
+  const sc = 1 + 0.1 * spr(t - 13.0, 10) - 0.1 * spr(t - 13.5, 14);
+  const depth = 3.4 * (1 - spr(t - 13.5, 14));
+  return { ry, rx, invP, sc, depth };
+}
+function drawTitle(t) {
+  // yellow frame splits into three bars that become the title lines
+  const bon = t >= 12.0 && t < 13.0;
+  S.ybars.forEach((b, i) => {
+    show(b, bon); if (!bon) return;
+    const e = eOut(seg(t, 12.0, 0.34));
+    const w = lerp(W, S.tLines[i].width, e);
+    const lineTurn = spr(t - (12.5 + i * 0.08), 13);
+    const h = lerp(640, 16, e) * clamp(1 - lineTurn * 1.7);
+    const cy = lerp(320 + i * 640, S.lineCY[i], e);
+    set(b, { x: CX - w / 2, y: cy - h / 2, width: w, height: Math.max(0, h) });
+    show(b, h > 0.3);
+  });
+  const on3 = t >= 12.5 && t < 14.0; show($('type3d'), on3);
+  if (on3) {
+    const s = titleWorld(t);
+    $('type3d').style.perspective = s.invP < 1e-7 ? 'none' : (1 / s.invP).toFixed(1) + 'px';
+    $('type3d').style.perspectiveOrigin = `${CX}px 620px`;
+    S.tw.style.transform = `scale3d(${s.sc},${s.sc},${s.sc}) rotateX(${s.rx}deg) rotateY(${s.ry}deg)`;
+    S.tletters.forEach(tl => {
+      const l = tl.l; const turn = spr(t - (12.5 + tl.li * 0.08 + tl.i * 0.02), 13);
+      const ang = -90 * (1 - turn);
+      tl.el.style.transform = `translate3d(${(l.cx - CX).toFixed(2)}px,${S.lineCY[tl.li] - 620}px,0) rotateX(${ang.toFixed(2)}deg)`;
+      tl.layers.forEach((ly, k) => { ly.style.transform = `translateZ(${(-k * s.depth).toFixed(2)}px) translate(${(-l.w / 2).toFixed(2)}px,${(-S.TS / 2).toFixed(2)}px)`; });
+    });
+  }
+  const on2 = t >= 14.0; S.title2d.forEach(g => show(g, on2));
+  // collapse 14.5 – 14.85 into the centre, ring opens 14.72 – 15
+  const col = eIn(seg(t, 14.5, 0.35));
+  const colXf = `translate(${CX},${CY}) scale(${Math.max(0.001, 1 - col)}) translate(${-CX},${-CY})`;
+  if (on2) S.tLines.forEach(w => { w.L.forEach(l => place(l, l.x0, w.base)); w.g.setAttribute('transform', colXf); });
+  const uon = t >= 13.6; show(S.under, uon);
+  if (uon) { const uw = 600 * eOut(seg(t, 13.6, 0.3)); set(S.under, { x: CX - uw / 2, y: 852, width: uw, height: 10, transform: colXf }); }
+  const pon = t >= 13.55; show(S.phone, pon);
+  if (pon) { set(S.phClip, { y: 900, height: 120 }); set(S.phone, { y: lerp(1100, 993, eOut(seg(t, 13.55, 0.3))), transform: colXf }); }
+  const con = t >= 14.0; show(S.cta, con); show(S.disc, con);
+  if (con) {
+    set(S.ctaClip, { y: 1010, height: 160 });
+    const u = eOut(seg(t, 14.0, 0.3));
+    set(S.cta, { y: lerp(1150, 1075, u), transform: colXf });
+    set(S.disc, { y: lerp(1200, 1135, eOut(seg(t, 14.06, 0.3))), transform: colXf });
+  }
+  // loop ring (also frame 0)
+  const ringOn = t >= 14.7 || t < 0.0001; show(S.loopRing, false);
+  if (t >= 14.7) {
+    const oz = S.oz1, e = eOut(seg(t, 14.7, 0.29));
+    const R = oz.ringW / 2 * e, sw = oz.sw * e;
+    show(S.loopRing, R > 0.5);
+    set(S.loopRing, { cx: CX, cy: oz.cy, r: Math.max(0.01, R - sw / 2), 'stroke-width': sw });
+  }
+}
+
+// ------------------------------------------------------------------ seek
+window.seek = function (t) {
+  t = (((t % OUT) + OUT) % OUT) / K;
+  drawHook(t); drawKin(t); drawMol(t); drawRows(t); drawUI(t); drawTitle(t);
+};
+
+// ------------------------------------------------------------------ audio
+window.renderAudio = async function () {
+  const sr = 48000, ctx = new OfflineAudioContext(2, Math.round(sr * OUT), sr);
+  const comp = ctx.createDynamicsCompressor(); comp.threshold.value = -14; comp.ratio.value = 4; comp.attack.value = 0.003; comp.release.value = 0.15;
+  const master = ctx.createGain(); master.gain.value = 0.8; master.connect(comp); comp.connect(ctx.destination);
+  const noiseBuf = ctx.createBuffer(1, sr * 2, sr); { const d = noiseBuf.getChannelData(0); let s = 7654321; for (let i = 0; i < d.length; i++) { s = (s * 1103515245 + 12345) & 0x7fffffff; d[i] = (s / 0x7fffffff) * 2 - 1; } }
+  const noise = (t, dur, type, f, q, g0, pan = 0) => { t *= K;
+    const n = ctx.createBufferSource(); n.buffer = noiseBuf;
+    const fl = ctx.createBiquadFilter(); fl.type = type; fl.frequency.value = f; fl.Q.value = q;
+    const g = ctx.createGain(); g.gain.setValueAtTime(g0, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    const p = ctx.createStereoPanner(); p.pan.value = pan;
+    n.connect(fl); fl.connect(g); g.connect(p); p.connect(master); n.start(t); n.stop(t + dur + 0.05);
+  };
+  const tone = (t, f, dur, g0, type = 'sine', pan = 0) => { t *= K;
+    const o = ctx.createOscillator(); o.type = type; o.frequency.value = f;
+    const g = ctx.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(g0, t + 0.006); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    const p = ctx.createStereoPanner(); p.pan.value = pan;
+    o.connect(g); g.connect(p); p.connect(master); o.start(t); o.stop(t + dur + 0.05);
+  };
+  const kick = (t, g0) => { t *= K;
+    const o = ctx.createOscillator(); o.type = 'sine';
+    o.frequency.setValueAtTime(130, t); o.frequency.exponentialRampToValueAtTime(45, t + 0.12);
+    const g = ctx.createGain(); g.gain.setValueAtTime(g0, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.38);
+    o.connect(g); g.connect(master); o.start(t); o.stop(t + 0.4);
+  };
+  // soft pluck chords: A minor-ish, bright
+  const chords = [[220, 277.2, 329.6], [220, 277.2, 329.6], [196, 246.9, 293.7], [174.6, 220, 261.6], [220, 277.2, 329.6], [246.9, 311.1, 370], [196, 246.9, 293.7], [220, 277.2, 329.6]];
+  for (let b = 0; b < 30; b++) {
+    const t = b * 0.5; kick(t, b % 4 === 0 ? 0.8 : 0.65);
+    noise(t + 0.25, 0.04, 'highpass', 9000, 0.7, 0.08, 0.2);
+    const ch = chords[Math.floor(b / 4)];
+    if (b < 28) ch.forEach((f, i) => tone(t + 0.25, f * 2, 0.22, 0.035, 'triangle', (i - 1) * 0.4));
+    if (b < 28) tone(t + 0.25, ch[0] / 2, 0.2, 0.12, 'sine');
+  }
+  const hit = (t, big) => { t *= K;
+    noise(t, big ? 0.8 : 0.28, 'bandpass', big ? 1000 : 2200, 0.9, big ? 0.7 : 0.35);
+    const o = ctx.createOscillator(); o.type = 'sine';
+    o.frequency.setValueAtTime(big ? 90 : 160, t); o.frequency.exponentialRampToValueAtTime(big ? 30 : 60, t + (big ? 1.0 : 0.3));
+    const g = ctx.createGain(); g.gain.setValueAtTime(big ? 0.9 : 0.4, t); g.gain.exponentialRampToValueAtTime(0.0001, t + (big ? 1.2 : 0.4));
+    o.connect(g); g.connect(master); o.start(t); o.stop(t + 1.3);
+    tone(t, big ? 880 : 1320, 0.4, 0.05, 'sine');
+  };
+  [2, 4, 6, 8, 10, 14].forEach(t => hit(t, false)); hit(12, true);
+  // UI ticks on selections and the tap
+  [10.78, 11.28].forEach(t => tone(t, 1760, 0.06, 0.06, 'square'));
+  tone(11.62, 2093, 0.12, 0.08, 'sine');
+  { const n = ctx.createBufferSource(); n.buffer = noiseBuf; n.loop = true;
+    const fl = ctx.createBiquadFilter(); fl.type = 'bandpass'; fl.Q.value = 5;
+    fl.frequency.setValueAtTime(250, 15); fl.frequency.exponentialRampToValueAtTime(7000, 18);
+    const g = ctx.createGain(); g.gain.setValueAtTime(0.0001, 15); g.gain.exponentialRampToValueAtTime(0.45, 17.97); g.gain.setValueAtTime(0, 18);
+    n.connect(fl); fl.connect(g); g.connect(master); n.start(15); n.stop(18.015);
+    const o = ctx.createOscillator(); o.type = 'sawtooth'; o.frequency.setValueAtTime(110, 15); o.frequency.exponentialRampToValueAtTime(880, 18);
+    const of = ctx.createBiquadFilter(); of.type = 'lowpass'; of.frequency.setValueAtTime(400, 15); of.frequency.exponentialRampToValueAtTime(5000, 18);
+    const og = ctx.createGain(); og.gain.setValueAtTime(0.0001, 15); og.gain.exponentialRampToValueAtTime(0.1, 17.97); og.gain.setValueAtTime(0, 18);
+    o.connect(of); of.connect(og); og.connect(master); o.start(15); o.stop(18.015); }
+  { const n = ctx.createBufferSource(); n.buffer = noiseBuf;
+    const fl = ctx.createBiquadFilter(); fl.type = 'bandpass'; fl.Q.value = 3;
+    fl.frequency.setValueAtTime(5000, 21.75); fl.frequency.exponentialRampToValueAtTime(300, 22.47);
+    const g = ctx.createGain(); g.gain.setValueAtTime(0.0001, 21.75); g.gain.exponentialRampToValueAtTime(0.3, 22.275); g.gain.exponentialRampToValueAtTime(0.0001, 22.485);
+    n.connect(fl); fl.connect(g); g.connect(master); n.start(21.75); n.stop(22.5); }
+  const buf = await ctx.startRendering();
+  const L = buf.getChannelData(0), Rr = buf.getChannelData(1), n = L.length;
+  const ab = new ArrayBuffer(44 + n * 4), v = new DataView(ab);
+  const ws = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+  ws(0, 'RIFF'); v.setUint32(4, 36 + n * 4, true); ws(8, 'WAVE'); ws(12, 'fmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 2, true);
+  v.setUint32(24, sr, true); v.setUint32(28, sr * 4, true); v.setUint16(32, 4, true); v.setUint16(34, 16, true); ws(36, 'data'); v.setUint32(40, n * 4, true);
+  for (let i = 0, o = 44; i < n; i++, o += 4) { v.setInt16(o, clamp(L[i], -1, 1) * 32767, true); v.setInt16(o + 2, clamp(Rr[i], -1, 1) * 32767, true); }
+  const bytes = new Uint8Array(ab); let bin = ''; for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+  return btoa(bin);
+};
+
+window.ready = (async () => {
+  for (const w of [600, 700, 800, 900]) await document.fonts.load(`${w} 100px Inter`, 'АҲқғўЁ');
+  await document.fonts.ready;
+  build(); window.seek(0); return true;
+})();
+</script>
+</body>
+</html>
