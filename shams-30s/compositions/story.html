@@ -1,0 +1,312 @@
+<template>
+  <style>
+    @font-face { font-family: "Shams Inter"; src: url("assets/fonts/Inter-Medium.otf"); font-weight: 500; }
+    @font-face { font-family: "Shams Inter"; src: url("assets/fonts/Inter-SemiBold.otf"); font-weight: 600; }
+    @font-face { font-family: "Shams Inter"; src: url("assets/fonts/Inter-Bold.otf"); font-weight: 700; }
+    @font-face { font-family: "Shams Display"; src: url("assets/fonts/InterDisplay-Black.otf"); font-weight: 900; }
+    #root {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      background: #f6f9fc;
+      font-family: "Shams Inter", sans-serif;
+      color: #003b84;
+    }
+    #st-stage { position: absolute; inset: 0; }
+    .st-title {
+      position: absolute;
+      left: 170px;
+      top: 150px;
+      margin: 0;
+      font-size: 72px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      line-height: 1.1;
+      white-space: nowrap;
+      color: #003b84;
+    }
+    .st-title span { display: inline-block; margin-right: 0.26em; }
+    .st-title .accent { color: #d9443a; }
+    .st-title .good { color: #088b1e; }
+    #st-formula {
+      position: absolute;
+      left: 1060px;
+      top: 168px;
+      font-size: 40px;
+      font-weight: 500;
+      color: #003b84;
+      white-space: nowrap;
+    }
+    #st-formula i { font-style: normal; font-weight: 700; }
+    #st-formula sup { font-size: 30px; vertical-align: 16px; }
+    #st-note {
+      position: absolute;
+      left: 1380px;
+      top: 880px;
+      font-size: 28px;
+      font-weight: 500;
+      color: rgba(0, 59, 132, 0.6);
+      white-space: nowrap;
+    }
+  </style>
+  <div id="root" data-composition-id="story" data-width="1920" data-height="1080">
+    <svg id="st-stage" width="1920" height="1080" viewBox="0 0 1920 1080" data-layout-allow-overflow>
+      <defs>
+        <pattern id="st-grid" width="48" height="48" patternUnits="userSpaceOnUse">
+          <path d="M48 0H0V48" fill="none" stroke="rgba(0,59,132,0.07)" stroke-width="1.5" />
+        </pattern>
+      </defs>
+      <rect width="1920" height="1080" fill="url(#st-grid)" />
+
+      <!-- graph (screen space) -->
+      <g id="st-graph" opacity="0">
+        <path id="st-axes" d="M1080 250 V800 H1760" fill="none" stroke="#003b84" stroke-width="4" stroke-linecap="round" />
+        <g id="st-gridlines"></g>
+        <g id="st-ticklabels" font-family="Shams Inter" font-size="30" font-weight="500" fill="#003b84"></g>
+        <text id="st-axis-x" x="1760" y="870" text-anchor="end" font-family="Shams Inter" font-size="30" font-weight="600" fill="#003b84">n — машғулот</text>
+        <path id="st-curve" d="" fill="none" stroke="#1e7fd6" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" />
+        <g id="st-dots"></g>
+        <line id="st-guide" x1="0" y1="0" x2="0" y2="0" stroke="#003b84" stroke-width="3" stroke-dasharray="4 10" stroke-linecap="round" opacity="0.5" />
+        <circle id="st-cur" r="14" fill="#fff" stroke="#1e7fd6" stroke-width="6" />
+        <text id="st-nlabel" font-family="Shams Inter" font-size="32" font-weight="700" fill="#003b84"></text>
+      </g>
+
+      <!-- world (camera) -->
+      <g id="st-world">
+        <g id="st-ticks"></g>
+        <line id="st-ext" stroke="rgba(0,59,132,0.35)" stroke-width="4" stroke-dasharray="14 12" stroke-linecap="round" />
+        <path id="st-wedge" d="" opacity="0.12" />
+        <g id="st-limit" opacity="0">
+          <line id="st-limit-line" stroke="#d9443a" stroke-width="6" stroke-linecap="round" />
+          <text id="st-limit-text" font-family="Shams Inter" font-size="34" font-weight="700" fill="#d9443a">чегара</text>
+        </g>
+        <path id="st-arc" d="" fill="none" stroke-width="8" stroke-linecap="round" />
+        <g id="st-leg">
+          <line id="st-thigh" stroke="#003b84" stroke-width="36" stroke-linecap="round" />
+          <line id="st-shin" stroke="#003b84" stroke-width="32" stroke-linecap="round" />
+          <line id="st-foot" stroke="#003b84" stroke-width="24" stroke-linecap="round" />
+          <circle id="st-hip" r="22" fill="#fff" stroke="#003b84" stroke-width="7" />
+          <circle id="st-ankle" r="15" fill="#fff" stroke="#003b84" stroke-width="6" />
+          <circle id="st-knee" r="30" fill="#fff" stroke="#003b84" stroke-width="8" />
+        </g>
+        <text id="st-num" font-family="Shams Display" font-size="128" font-weight="900" letter-spacing="-2">0°</text>
+      </g>
+    </svg>
+
+    <h2 id="st-t1" class="st-title clip" data-start="0.5" data-duration="4.0" data-track-index="1"><span>Ҳар</span><span>қадам</span><span>—</span><span class="accent">оғриқ</span></h2>
+    <h2 id="st-t2" class="st-title clip" data-start="4.8" data-duration="2.85" data-track-index="1"><span>Тизза</span><span class="accent">чегарадан</span><span>ўтолмайди</span></h2>
+    <h2 id="st-t3" class="st-title clip" data-start="9.0" data-duration="4.6" data-track-index="1"><span>Ҳар</span><span>машғулот</span><span>—</span><br /><span>бир</span><span>қадам</span><span>олға</span></h2>
+    <h2 id="st-t4" class="st-title clip" data-start="13.9" data-duration="5.8" data-track-index="1"><span>Ҳаракат</span><span>ҳажми</span><br /><span class="good">тикланади</span></h2>
+    <h2 id="st-t5" class="st-title clip" data-start="21.0" data-duration="2.5" data-track-index="1"><span>Ҳаракат</span><span class="good">қайтди</span></h2>
+    <div id="st-formula" class="clip" data-start="9.6" data-duration="10.2" data-track-index="2"><div id="st-formula-in"><i>θ</i>(n) = 40° + 95° · (1 − e<sup>−n/2</sup>)</div></div>
+    <div id="st-note" class="clip" data-start="10.0" data-duration="9.8" data-track-index="3"><div id="st-note-in">* намунавий график</div></div>
+  </div>
+  <script>
+    (function () {
+      const D = 25.4;
+      const RED = [217, 68, 58], AMBER = [199, 119, 0], BLUE = [30, 127, 214], GREEN = [8, 139, 30];
+      const R = 170, THIGH = 420, SHIN = 400, FOOT = 95;
+      const $ = (id) => document.getElementById(id);
+      const set = (el, a) => { for (const k in a) el.setAttribute(k, a[k]); };
+      const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+      const lerp = (a, b, u) => a + (b - a) * u;
+      const seg = (t, a, b) => clamp((t - a) / (b - a), 0, 1);
+      const inOut = (u) => (u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2);
+      const out3 = (u) => 1 - Math.pow(1 - u, 3);
+      const out5 = (u) => 1 - Math.pow(1 - u, 5);
+      const in3 = (u) => u * u * u;
+      const rad = (d) => (d * Math.PI) / 180;
+      const mix = (c1, c2, u) => c1.map((c, i) => Math.round(lerp(c, c2[i], u)));
+      const rgb = (c) => `rgb(${c[0]},${c[1]},${c[2]})`;
+      const f = (n) => 40 + 95 * (1 - Math.exp(-n / 2));
+      const angleColor = (th) => (th <= 85 ? mix(RED, AMBER, clamp((th - 40) / 45, 0, 1)) : mix(AMBER, GREEN, clamp((th - 85) / 45, 0, 1)));
+
+      // graph mapping (screen space)
+      const GX = (n) => 1080 + n * 55;
+      const GY = (th) => 800 - th * 3.6;
+
+      // static: protractor ticks, graph grid and labels
+      let ticks = "";
+      for (let a = 0; a <= 180; a += 10) {
+        const long = a % 30 === 0;
+        const r1 = 205, r2 = long ? 236 : 222;
+        ticks += `<line x1="${r1 * Math.cos(rad(a))}" y1="${r1 * Math.sin(rad(a))}" x2="${r2 * Math.cos(rad(a))}" y2="${r2 * Math.sin(rad(a))}" stroke="rgba(0,59,132,0.4)" stroke-width="${long ? 4 : 2.5}" stroke-linecap="round"/>`;
+      }
+      $("st-ticks").innerHTML = ticks;
+      let gl = "", lab = "";
+      [45, 90, 135].forEach((th) => {
+        gl += `<line x1="1080" y1="${GY(th)}" x2="1760" y2="${GY(th)}" stroke="rgba(0,59,132,0.14)" stroke-width="2"/>`;
+        lab += `<text x="1060" y="${GY(th) + 10}" text-anchor="end">${th}°</text>`;
+      });
+      for (let n = 0; n <= 12; n += 2) lab += `<text x="${GX(n)}" y="840" text-anchor="middle">${n}</text>`;
+      $("st-gridlines").innerHTML = gl;
+      $("st-ticklabels").innerHTML = lab;
+      let dots = "";
+      for (let n = 0; n <= 12; n++) dots += `<circle id="st-dot${n}" cx="${GX(n)}" cy="${GY(f(n))}" r="0" fill="#1e7fd6"/>`;
+      $("st-dots").innerHTML = dots;
+      const axes = $("st-axes");
+      const axesLen = 550 + 680;
+      axes.setAttribute("stroke-dasharray", axesLen);
+
+      // n(t) during the proof
+      const nAt = (t) => 12 * inOut(seg(t, 10.8, 19.6));
+
+      function theta(t) {
+        if (t < 0.4) return 0;
+        if (t < 1.5) return 40 * out3(seg(t, 0.4, 1.5));
+        if (t < 4.6) {
+          const env = lerp(1, 0.35, seg(t, 1.5, 4.6));
+          return 40 + env * (1.3 * Math.sin(2 * Math.PI * 5.3 * t) + 0.7 * Math.sin(2 * Math.PI * 8.1 * t + 1));
+        }
+        if (t < 7.6) {
+          const b1 = Math.sin(Math.PI * seg(t, 4.9, 5.9)), b2 = Math.sin(Math.PI * seg(t, 6.2, 7.2));
+          const push = 4.5 * Math.max(b1, b2);
+          return 40 + push + push * 0.18 * Math.sin(2 * Math.PI * 9 * t);
+        }
+        if (t < 10.8) return 40;
+        if (t < 20.8) return f(nAt(t));
+        if (t < 23.2) {
+          const u = (t - 20.8) / 2.4;
+          return f(12) * (1 + Math.cos(2 * Math.PI * u)) / 2;
+        }
+        return f(12);
+      }
+
+      // camera: knee screen position + scale
+      function cam(t) {
+        let x = 960, y = 560, s = 1;
+        s = lerp(1, 1.12, inOut(seg(t, 4.6, 7.6)));
+        const u1 = inOut(seg(t, 7.6, 8.8));
+        x = lerp(x, 560, u1); y = lerp(y, 610, u1); s = lerp(s, 0.82, u1);
+        const u2 = inOut(seg(t, 19.7, 20.8));
+        x = lerp(x, 960, u2); y = lerp(y, 520, u2); s = lerp(s, 1, u2);
+        const u3 = inOut(seg(t, 23.4, 25.0));
+        y = lerp(y, 540, u3); s = lerp(s, 230 / R, u3);
+        return { x, y, s };
+      }
+
+      function arcPath(a0, a1, r) {
+        const span = a1 - a0;
+        if (span >= 359.9) return `M${r} 0 A${r} ${r} 0 1 1 ${-r} 0 A${r} ${r} 0 1 1 ${r} 0`;
+        const p0 = [r * Math.cos(rad(a0)), r * Math.sin(rad(a0))];
+        const p1 = [r * Math.cos(rad(a1)), r * Math.sin(rad(a1))];
+        return `M${p0[0]} ${p0[1]} A${r} ${r} 0 ${span > 180 ? 1 : 0} 1 ${p1[0]} ${p1[1]}`;
+      }
+
+      const state = { t: 0 };
+      function render() {
+        const t = state.t;
+        const th = theta(t);
+        const c = cam(t);
+        $("st-world").setAttribute("transform", `translate(${c.x} ${c.y}) scale(${c.s})`);
+
+        // leg (knee at world origin)
+        const d = [Math.cos(rad(th)), Math.sin(rad(th))];
+        const A = [SHIN * d[0], SHIN * d[1]];
+        set($("st-thigh"), { x1: -THIGH, y1: 0, x2: 0, y2: 0 });
+        set($("st-hip"), { cx: -THIGH, cy: 0 });
+        set($("st-shin"), { x1: 0, y1: 0, x2: A[0], y2: A[1] });
+        set($("st-ankle"), { cx: A[0], cy: A[1] });
+        set($("st-foot"), { x1: A[0], y1: A[1], x2: A[0] + FOOT * d[1], y2: A[1] - FOOT * d[0] });
+        set($("st-ext"), { x1: 40, y1: 0, x2: 470, y2: 0 });
+
+        const legFade = 1 - seg(t, 23.4, 24.3);
+        $("st-leg").setAttribute("opacity", legFade);
+        $("st-ext").setAttribute("opacity", legFade);
+        $("st-ticks").setAttribute("opacity", legFade * (0.6 + 0.4 * seg(t, 0, 0.6)));
+
+        // colour by angle (after the payoff everything is green)
+        let col = t < 10.8 ? RED : angleColor(th);
+        if (t >= 20.5) col = GREEN;
+        const css = rgb(col);
+
+        // arc: closes to a full ring at the end
+        const close = out5(seg(t, 23.9, 25.0));
+        const a1 = th + (360 - th) * close;
+        $("st-arc").setAttribute("d", th < 0.5 && close === 0 ? "" : arcPath(0, Math.max(a1, 0.6), R));
+        $("st-arc").setAttribute("stroke", css);
+        $("st-arc").setAttribute("stroke-width", lerp(8, 8, close));
+        const wedge = th > 0.5 ? `M0 0 L${R} 0 A${R} ${R} 0 0 1 ${R * Math.cos(rad(th))} ${R * Math.sin(rad(th))} Z` : "";
+        $("st-wedge").setAttribute("d", wedge);
+        $("st-wedge").setAttribute("fill", css);
+        $("st-wedge").setAttribute("opacity", 0.12 * legFade);
+
+        // number
+        const num = $("st-num");
+        num.textContent = Math.round(th) + "°";
+        num.setAttribute("fill", css);
+        set(num, { x: 70, y: -120 });
+        num.setAttribute("opacity", seg(t, 0.9, 1.2) * legFade);
+        const pop = t >= 20.5 && t < 21.0 ? 1 + 0.08 * Math.sin(Math.PI * seg(t, 20.5, 21.0)) : 1;
+        num.setAttribute("transform", `translate(70 -150) scale(${pop}) translate(-70 150)`);
+
+        // limit marker
+        const lim = seg(t, 4.8, 5.1) * (1 - seg(t, 7.6, 8.0));
+        $("st-limit").setAttribute("opacity", lim);
+        const l0 = [196 * Math.cos(rad(40)), 196 * Math.sin(rad(40))];
+        const l1 = [262 * Math.cos(rad(40)), 262 * Math.sin(rad(40))];
+        set($("st-limit-line"), { x1: l0[0], y1: l0[1], x2: l1[0], y2: l1[1] });
+        set($("st-limit-text"), { x: 300 * Math.cos(rad(18)), y: 300 * Math.sin(rad(18)) + 12 });
+
+        // graph
+        const gOn = seg(t, 8.4, 8.8) * (1 - seg(t, 19.7, 20.1));
+        const g = $("st-graph");
+        g.setAttribute("opacity", gOn);
+        g.setAttribute("filter", "");
+        axes.setAttribute("stroke-dashoffset", axesLen * (1 - out3(seg(t, 8.5, 9.6))));
+        $("st-gridlines").setAttribute("opacity", seg(t, 9.2, 9.8));
+        $("st-ticklabels").setAttribute("opacity", seg(t, 9.3, 9.9));
+        $("st-axis-x").setAttribute("opacity", seg(t, 9.4, 10.0));
+        const n = t < 10.8 ? 0 : nAt(t);
+        const showCurve = t >= 9.9;
+        let p = "";
+        if (showCurve) {
+          const steps = Math.max(1, Math.ceil(n * 8));
+          for (let i = 0; i <= steps; i++) {
+            const k = (n * i) / steps;
+            p += (i ? "L" : "M") + GX(k).toFixed(1) + " " + GY(f(k)).toFixed(1);
+          }
+        }
+        $("st-curve").setAttribute("d", p);
+        $("st-curve").setAttribute("stroke", rgb(angleColor(f(n))));
+        for (let k = 0; k <= 12; k++) {
+          const tk = k === 0 ? seg(t, 9.9, 10.2) : clamp((n - k) * 5 + 1, 0, 1) * (n >= k - 0.2 ? 1 : 0);
+          const dot = $("st-dot" + k);
+          dot.setAttribute("r", (k === 0 ? out3(tk) : out3(clamp((n - k + 0.2) * 4, 0, 1))) * 9);
+          dot.setAttribute("fill", rgb(angleColor(f(k))));
+        }
+        const cx = GX(n), cy = GY(f(n));
+        const curOn = seg(t, 9.9, 10.3);
+        set($("st-cur"), { cx, cy, opacity: curOn, stroke: rgb(angleColor(f(n))) });
+        const nl = $("st-nlabel");
+        nl.textContent = "n = " + Math.round(n);
+        set(nl, { x: cx + 24, y: cy + 48, opacity: curOn });
+        // guide from the arc tip (world → screen) to the current point
+        const tip = [c.x + c.s * R * Math.cos(rad(th)), c.y + c.s * R * Math.sin(rad(th))];
+        set($("st-guide"), { x1: tip[0], y1: tip[1], x2: cx, y2: cy, opacity: 0.5 * curOn });
+      }
+
+      const tl = gsap.timeline({ paused: true });
+      tl.to(state, { t: D, duration: D, ease: "none", onUpdate: render }, 0);
+
+      // titles: word blur-in, word blur-out
+      function title(id, start, dur) {
+        const words = `#${id} span`;
+        tl.fromTo(words, { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, stagger: 0.07, ease: "power4.out" }, start + 0.02);
+        tl.to(words, { opacity: 0, filter: "blur(8px)", duration: 0.18, stagger: 0.04, ease: "power3.in" }, start + dur - 0.42);
+      }
+      title("st-t1", 0.5, 4.0);
+      title("st-t2", 4.8, 2.85);
+      title("st-t3", 9.0, 4.6);
+      title("st-t4", 13.9, 5.8);
+      title("st-t5", 21.0, 2.5);
+      tl.fromTo("#st-formula-in", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power4.out" }, 9.62);
+      tl.to("#st-formula-in", { opacity: 0, filter: "blur(8px)", duration: 0.18, ease: "power3.in" }, 19.55);
+      tl.fromTo("#st-note-in", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out" }, 10.0);
+      tl.to("#st-note-in", { opacity: 0, duration: 0.18, ease: "power3.in" }, 19.55);
+
+      render();
+      window.__timelines["story"] = tl;
+    })();
+  </script>
+</template>

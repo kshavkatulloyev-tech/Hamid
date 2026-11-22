@@ -1,0 +1,45 @@
+<!doctype html>
+<html
+  lang="uz"
+  data-composition-variables='[{"id":"clinic_name","type":"string","label":"Клиника номи","default":"Ҳабибулло Шамс"},{"id":"tagline","type":"string","label":"Шиор","default":"Жонга шифо ҳам оро"},{"id":"phone","type":"string","label":"Телефон","default":"+998 93 963 10 95"},{"id":"address","type":"string","label":"Манзил","default":"Вобкент тумани"}]'
+>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: #f6f9fc; }
+      #root { width: 100%; height: 100%; position: relative; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="30" data-width="1920" data-height="1080">
+      <div id="story" data-composition-id="story" data-composition-src="compositions/story.html"
+        data-start="0" data-duration="25.4" data-track-index="0" data-track-kind="graphics"
+        data-width="1920" data-height="1080"></div>
+      <div id="end" data-composition-id="end" data-composition-src="compositions/end.html"
+        data-start="25.4" data-duration="4.6" data-track-index="0" data-track-kind="graphics"
+        data-width="1920" data-height="1080"></div>
+
+      <!-- sound effects (one lane, second where they overlap) -->
+      <audio id="sfx-pop-40" class="clip" src="assets/audio/pop.mp3" data-start="1.22" data-duration="0.72" data-track-index="2" data-volume="0.7"></audio>
+      <audio id="sfx-whoosh-cam" class="clip" src="assets/audio/whoosh-short.mp3" data-start="7.75" data-duration="0.57" data-track-index="2" data-volume="0.55"></audio>
+      <audio id="sfx-dot-0" class="clip" src="assets/audio/click-soft.mp3" data-start="9.95" data-duration="0.36" data-track-index="2" data-volume="0.45"></audio>
+      <audio id="sfx-dot-2" class="clip" src="assets/audio/key-press.mp3" data-start="13.24" data-duration="0.43" data-track-index="2" data-volume="0.45"></audio>
+      <audio id="sfx-dot-4" class="clip" src="assets/audio/click-soft.mp3" data-start="14.33" data-duration="0.36" data-track-index="2" data-volume="0.45"></audio>
+      <audio id="sfx-dot-6" class="clip" src="assets/audio/key-press.mp3" data-start="15.16" data-duration="0.43" data-track-index="2" data-volume="0.45"></audio>
+      <audio id="sfx-dot-8" class="clip" src="assets/audio/click-soft.mp3" data-start="15.95" data-duration="0.36" data-track-index="2" data-volume="0.45"></audio>
+      <audio id="sfx-dot-10" class="clip" src="assets/audio/key-press.mp3" data-start="16.97" data-duration="0.43" data-track-index="2" data-volume="0.45"></audio>
+      <audio id="sfx-dot-12" class="clip" src="assets/audio/click-soft.mp3" data-start="18.83" data-duration="0.36" data-track-index="2" data-volume="0.45"></audio>
+      <audio id="sfx-whoosh-back" class="clip" src="assets/audio/whoosh.mp3" data-start="19.72" data-duration="0.57" data-track-index="2" data-volume="0.5"></audio>
+      <audio id="sfx-pop-135" class="clip" src="assets/audio/pop.mp3" data-start="20.52" data-duration="0.72" data-track-index="2" data-volume="0.7"></audio>
+      <audio id="sfx-riser" class="clip" src="assets/audio/riser.mp3" data-start="15.4" data-duration="10.0" data-track-index="3" data-volume="0.45" data-fade-in="1.5"></audio>
+      <audio id="sfx-impact" class="clip" src="assets/audio/impact-bass-1.mp3" data-start="25.78" data-duration="2.1" data-track-index="2" data-volume="0.8"></audio>
+    </div>
+    <script>
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = gsap.timeline({ paused: true });
+    </script>
+  </body>
+</html>
