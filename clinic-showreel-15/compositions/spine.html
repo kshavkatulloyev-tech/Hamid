@@ -1,0 +1,60 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; font-family: "Montserrat", sans-serif; }
+    #spine-bg { position: absolute; inset: 0; background: #24801f; }
+    #spine-glow { position: absolute; left: 190px; top: 560px; width: 700px; height: 700px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0) 70%); }
+    #spine-stage { position: absolute; inset: 0; }
+    #spine-title { position: absolute; left: 120px; width: 840px; top: 300px; text-align: center; color: #ffffff; }
+    .spine-line { font-size: 104px; line-height: 124px; font-weight: 900; letter-spacing: -1px; }
+    .spine-line span { display: inline-block; margin: 0 12px; }
+    #spine-w4 { color: #f5c518; }
+    #spine-col { position: absolute; left: 455px; top: 640px; width: 170px; }
+    .vert { width: 170px; height: 58px; margin-bottom: 22px; border-radius: 29px; background: #ffffff;
+      box-shadow: 0 10px 24px rgba(0, 40, 10, 0.25); }
+    #spine-leaves { position: absolute; left: 340px; top: 1150px; width: 400px; height: 200px; }
+  </style>
+  <div id="root" data-composition-id="spine" data-width="1080" data-height="1920">
+    <div id="spine-bg"></div>
+    <div id="spine-stage" class="clip" data-start="0" data-duration="3">
+      <div id="spine-glow" data-layout-ignore></div>
+      <div id="spine-title">
+        <div class="spine-line"><span id="spine-w1">Ҳаракат</span><span id="spine-w2">—</span></div>
+        <div class="spine-line"><span id="spine-w3">бу</span><span id="spine-w4">ҳаёт</span></div>
+      </div>
+      <div id="spine-col">
+        <div class="vert" id="v1"></div><div class="vert" id="v2"></div><div class="vert" id="v3"></div>
+        <div class="vert" id="v4"></div><div class="vert" id="v5"></div><div class="vert" id="v6"></div>
+        <div class="vert" id="v7" style="margin-bottom:0"></div>
+      </div>
+      <svg id="spine-leaves" viewBox="0 0 400 200" data-layout-ignore>
+        <path id="leaf-l" d="M200 190 C 120 180 40 120 30 40 C 110 50 190 110 200 190 Z" fill="#f5c518" />
+        <path id="leaf-r" d="M200 190 C 280 180 360 120 370 40 C 290 50 210 110 200 190 Z" fill="#ffffff" />
+      </svg>
+    </div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    const bend = [ [-70, -14], [-40, -9], [10, 4], [55, 12], [60, 8], [15, -4], [-45, -12] ];
+    bend.forEach(([x, r], i) => {
+      // vertebrae stack up from the bottom, still crooked
+      tl.fromTo("#v" + (7 - i), { y: 420, opacity: 0, x: bend[6 - i][0], rotation: bend[6 - i][1] },
+        { y: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 0.05 + i * 0.06);
+    });
+    // words blur in one by one
+    ["#spine-w1", "#spine-w2", "#spine-w3", "#spine-w4"].forEach((s, i) => {
+      tl.fromTo(s, { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.15, ease: "power4.out" }, 0.3 + i * 0.09);
+    });
+    // the spine straightens
+    for (let i = 1; i <= 7; i++) {
+      tl.to("#v" + i, { x: 0, rotation: 0, duration: 0.6, ease: "power3.inOut" }, 1.1 + (i - 1) * 0.03);
+    }
+    tl.fromTo("#spine-glow", { scale: 0.6, opacity: 0 }, { scale: 1.1, opacity: 1, duration: 0.7, ease: "power2.out" }, 1.5);
+    // leaves grow from the base
+    tl.fromTo("#leaf-l", { scale: 0, transformOrigin: "200px 190px" }, { scale: 1, duration: 0.5, ease: "back.out(1.7)" }, 1.65);
+    tl.fromTo("#leaf-r", { scale: 0, transformOrigin: "200px 190px" }, { scale: 1, duration: 0.5, ease: "back.out(1.7)" }, 1.75);
+    // whip up out of the scene
+    tl.to("#spine-stage", { y: -520, filter: "blur(14px)", duration: 0.24, ease: "power3.in" }, 2.74);
+    window.__timelines["spine"] = tl;
+  </script>
+</template>

@@ -1,0 +1,49 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; font-family: "Montserrat", sans-serif; }
+    #methods-bg { position: absolute; inset: 0; background: radial-gradient(110% 70% at 50% 40%, #ffffff 0%, #e8f3fc 60%, #cfe5f7 100%); }
+    #methods-stage { position: absolute; inset: 0; }
+    #methods-disc { position: absolute; left: 260px; top: 300px; width: 560px; height: 560px; border-radius: 50%;
+      background: #f5c518; box-shadow: 0 30px 60px rgba(11, 61, 145, 0.18); }
+    #methods-num { position: absolute; left: 260px; top: 300px; width: 560px; height: 560px; line-height: 560px; text-align: center;
+      font-size: 250px; font-weight: 900; color: #0b3d91; letter-spacing: -8px; }
+    #methods-label { position: absolute; left: 120px; width: 840px; top: 900px; text-align: center;
+      font-size: 76px; line-height: 92px; font-weight: 800; color: #0b3d91; }
+    #methods-chips { position: absolute; left: 120px; width: 840px; top: 1020px; text-align: center; }
+    .chip { display: inline-block; margin: 10px 8px; padding: 0 38px; height: 88px; line-height: 88px; border-radius: 44px;
+      background: #ffffff; color: #24801f; font-size: 44px; font-weight: 800; box-shadow: 0 12px 30px rgba(11, 61, 145, 0.14); }
+    #methods-flood { position: absolute; left: 260px; top: 300px; width: 560px; height: 560px; }
+  </style>
+  <div id="root" data-composition-id="methods" data-width="1080" data-height="1920">
+    <div id="methods-bg"></div>
+    <div id="methods-stage" class="clip" data-start="0" data-duration="3">
+      <div id="methods-disc"></div>
+      <div id="methods-num">0+</div>
+      <div id="methods-label">дан ортиқ усул</div>
+      <div id="methods-chips">
+        <div class="chip" id="chip1">Массаж</div><div class="chip" id="chip2">Физиотерапия</div><br />
+        <div class="chip" id="chip3">Табиий даволаш</div>
+      </div>
+    </div>
+    <div id="methods-flood" data-layout-allow-occlusion class="clip" data-start="0" data-duration="3" data-layout-ignore><div id="methods-flood-in" style="width:100%;height:100%;border-radius:50%;background:#0b3d91"></div></div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    // arrives from below, still blurred from the whip
+    tl.fromTo("#methods-stage", { y: 520, filter: "blur(14px)" }, { y: 0, filter: "blur(0px)", duration: 0.35, ease: "expo.out" }, 0);
+    tl.fromTo("#methods-disc", { scale: 0.6 }, { scale: 1, duration: 0.6, ease: "back.out(1.4)" }, 0.02);
+    // counter 0 → 50
+    const counter = { v: 0 };
+    tl.fromTo(counter, { v: 0 }, { v: 50, duration: 0.85, ease: "power2.out",
+      onUpdate: () => { document.querySelector("#methods-num").textContent = Math.round(counter.v) + "+"; } }, 0.15);
+    tl.fromTo("#methods-num", { scale: 1 }, { scale: 1.08, duration: 0.12, yoyo: true, repeat: 1, ease: "power2.out" }, 1.0);
+    tl.fromTo("#methods-label", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power4.out" }, 0.75);
+    // chips land one by one
+    ["#chip1", "#chip2", "#chip3"].forEach((s, i) => {
+      tl.fromTo(s, { scale: 0.3, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, ease: "back.out(2)" }, 1.08 + i * 0.18);
+    });
+    // the disc floods the frame deep blue
+    tl.fromTo("#methods-flood-in", { scale: 0 }, { scale: 4.8, duration: 0.42, ease: "power2.inOut" }, 2.56);
+    window.__timelines["methods"] = tl;
+  </script>
+</template>

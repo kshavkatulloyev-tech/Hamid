@@ -1,0 +1,52 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; font-family: "Montserrat", sans-serif; }
+    #hook-bg { position: absolute; inset: 0; background: radial-gradient(110% 70% at 50% 40%, #ffffff 0%, #e8f3fc 60%, #cfe5f7 100%); }
+    #hook-ring { position: absolute; left: 140px; top: 360px; width: 800px; height: 800px; }
+    #hook-copy { position: absolute; left: 120px; width: 840px; top: 640px; text-align: center; }
+    #hook-slot { position: relative; height: 170px; overflow: hidden; }
+    #hook-reel { position: absolute; left: 0; top: 0; width: 100%; }
+    .hook-word { height: 170px; line-height: 170px; font-size: 118px; font-weight: 900; color: #0b3d91; letter-spacing: -2px; }
+    #hook-q { font-size: 100px; line-height: 150px; font-weight: 800; color: #0b3d91; margin-top: 6px; }
+    #hook-q span { display: inline-block; }
+    #hook-mark { color: #24801f; }
+    #hook-dot { position: absolute; left: 500px; top: 1060px; width: 80px; height: 80px; }
+  </style>
+  <div id="root" data-composition-id="hook" data-width="1080" data-height="1920">
+    <div id="hook-bg"></div>
+    <svg id="hook-ring" class="clip" data-start="0" data-duration="2.5" data-layout-ignore viewBox="0 0 800 800">
+      <circle cx="400" cy="400" r="380" fill="none" stroke="#0b3d91" stroke-opacity="0.08" stroke-width="3" stroke-dasharray="6 18" />
+      <circle cx="400" cy="400" r="300" fill="none" stroke="#24801f" stroke-opacity="0.10" stroke-width="2" />
+    </svg>
+    <div id="hook-copy" class="clip" data-start="0" data-duration="2.5">
+      <div id="hook-slot" data-layout-allow-overflow>
+        <div id="hook-reel">
+          <div class="hook-word" data-layout-allow-occlusion>Бўйнингиз</div>
+          <div class="hook-word" data-layout-allow-occlusion>Тиззангиз</div>
+          <div class="hook-word" data-layout-allow-occlusion>Елкангиз</div>
+          <div class="hook-word" data-layout-allow-occlusion>Белингиз</div>
+        </div>
+      </div>
+      <div id="hook-q"><span id="hook-q1">оғрийдими</span><span id="hook-mark">?</span></div>
+    </div>
+    <div id="hook-dot" class="clip" data-start="0" data-duration="2.5" data-layout-ignore><div id="hook-dot-in" style="width:100%;height:100%;border-radius:50%;background:#24801f"></div></div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    // the ring turns slowly behind the copy
+    tl.fromTo("#hook-ring", { rotation: 0 }, { rotation: 40, duration: 2.5, ease: "none" }, 0);
+    // slot machine: rolls 0.55 → 1.15 s and lands on "Белингиз"
+    const rolls = [0.55, 0.75, 0.93];
+    rolls.forEach((t, i) => {
+      tl.to("#hook-reel", { y: -170 * (i + 1), duration: i === 2 ? 0.28 : 0.14, ease: i === 2 ? "back.out(1.6)" : "power2.in" }, t);
+      tl.fromTo("#hook-reel", { filter: "blur(0px)" }, { filter: "blur(5px)", duration: 0.07, yoyo: true, repeat: 1, ease: "none" }, t);
+    });
+    // the question mark becomes the green dot
+    tl.fromTo("#hook-mark", { opacity: 1 }, { opacity: 0, duration: 0.1 }, 1.55);
+    tl.fromTo("#hook-dot-in", { scale: 0 }, { scale: 1, duration: 0.3, ease: "back.out(2)" }, 1.5);
+    // copy leaves, dot zooms through and floods the frame green
+    tl.to("#hook-copy", { opacity: 0, filter: "blur(10px)", duration: 0.2, ease: "power2.in" }, 2.0);
+    tl.to("#hook-dot-in", { scale: 34, duration: 0.45, ease: "power3.in" }, 2.02);
+    window.__timelines["hook"] = tl;
+  </script>
+</template>

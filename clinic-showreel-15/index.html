@@ -1,0 +1,51 @@
+<!doctype html>
+<html
+  lang="uz"
+  data-composition-variables='[
+    {"id":"phone","type":"string","label":"Телефон","default":"+998 93 963 10 95"},
+    {"id":"address","type":"string","label":"Манзил","default":"Вобкент, Зиё кўчаси"},
+    {"id":"telegram","type":"string","label":"Telegram","default":"t.me/HabibulloShams"},
+    {"id":"blue","type":"color","label":"Тўқ кўк","default":"#0B3D91"},
+    {"id":"green","type":"color","label":"Яшил","default":"#24801F"},
+    {"id":"yellow","type":"color","label":"Олтин","default":"#F5C518"}
+  ]'
+>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1080px; height: 1920px; overflow: hidden; background: #ffffff; }
+      #root { position: relative; width: 100%; height: 100%; font-family: "Montserrat", sans-serif; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="15" data-width="1080" data-height="1920">
+      <div id="hook" data-composition-id="hook" data-composition-src="compositions/hook.html"
+        data-start="0" data-duration="2.5" data-track-index="1" data-track-kind="graphics" data-width="1080" data-height="1920"></div>
+      <div id="spine" data-composition-id="spine" data-composition-src="compositions/spine.html"
+        data-start="2.5" data-duration="3" data-track-index="1" data-track-kind="graphics" data-width="1080" data-height="1920"></div>
+      <div id="methods" data-composition-id="methods" data-composition-src="compositions/methods.html"
+        data-start="5.5" data-duration="3" data-track-index="1" data-track-kind="graphics" data-width="1080" data-height="1920"></div>
+      <div id="slogan" data-composition-id="slogan" data-composition-src="compositions/slogan.html"
+        data-start="8.5" data-duration="3" data-track-index="1" data-track-kind="graphics" data-width="1080" data-height="1920"></div>
+      <div id="endcard" data-composition-id="endcard" data-composition-src="compositions/endcard.html"
+        data-start="11.5" data-duration="3.5" data-track-index="1" data-track-kind="graphics" data-width="1080" data-height="1920"></div>
+
+
+      <audio id="sfx-flood1" class="clip" src="assets/sfx/whoosh-cinematic.mp3" data-start="2.05" data-duration="1.2" data-track-index="11" data-volume="0.7"></audio>
+      <audio id="sfx-whip" class="clip" src="assets/sfx/whoosh-short.mp3" data-start="5.3" data-duration="0.57" data-track-index="11" data-volume="0.8"></audio>
+      <audio id="sfx-pop1" class="clip" src="assets/sfx/pop.mp3" data-start="6.6" data-duration="0.4" data-track-index="11" data-volume="0.6"></audio>
+      <audio id="sfx-pop2" class="clip" src="assets/sfx/pop.mp3" data-start="6.78" data-duration="0.4" data-track-index="12" data-volume="0.5"></audio>
+      <audio id="sfx-pop3" class="clip" src="assets/sfx/pop.mp3" data-start="6.96" data-duration="0.4" data-track-index="13" data-volume="0.6"></audio>
+      <audio id="sfx-flood2" class="clip" src="assets/sfx/whoosh.mp3" data-start="8.1" data-duration="0.57" data-track-index="11" data-volume="0.6"></audio>
+      <audio id="sfx-riser" class="clip" src="assets/sfx/riser.mp3" data-start="9.9" data-duration="1.6" data-track-index="11" data-volume="0.5" data-fade-out="0.1"></audio>
+      <audio id="sfx-impact" class="clip" src="assets/sfx/impact-bass-1.mp3" data-start="11.45" data-duration="1.5" data-track-index="12" data-volume="0.8"></audio>
+    </div>
+    <script>
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = gsap.timeline({ paused: true });
+    </script>
+  </body>
+</html>

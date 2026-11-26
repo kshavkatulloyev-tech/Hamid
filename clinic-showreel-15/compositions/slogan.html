@@ -1,0 +1,69 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; font-family: "Montserrat", sans-serif; }
+    #slogan-bg { position: absolute; inset: 0; background: radial-gradient(90% 60% at 50% 32%, #1556c0 0%, #0b3d91 55%, #072a66 100%); }
+    #slogan-sun { position: absolute; left: 290px; top: 330px; width: 500px; height: 500px; }
+    #slogan-rays { position: absolute; inset: 0; }
+    #slogan-core { position: absolute; left: 110px; top: 110px; width: 280px; height: 280px; border-radius: 50%;
+      background: radial-gradient(circle at 40% 38%, #ffe27a 0%, #f5c518 60%, #e0a800 100%);
+      box-shadow: 0 0 80px rgba(245, 197, 24, 0.55); }
+    #slogan-copy { position: absolute; left: 120px; width: 840px; top: 900px; text-align: center; color: #ffffff; }
+    .slogan-line { font-size: 108px; line-height: 132px; font-weight: 900; letter-spacing: -1px; }
+    .slogan-line .ch { display: inline-block; }
+    #slogan-gold { color: #f5c518; }
+    #slogan-iris { position: absolute; inset: 0; background: #ffffff; }
+  </style>
+  <div id="root" data-composition-id="slogan" data-width="1080" data-height="1920">
+    <div id="slogan-bg"></div>
+    <div id="slogan-sun" class="clip" data-start="0" data-duration="3" data-layout-ignore>
+      <svg id="slogan-rays" viewBox="0 0 500 500">
+        <g id="slogan-rays-g" fill="#f5c518">
+          <rect x="242" y="10" width="16" height="70" rx="8" /><rect x="242" y="420" width="16" height="70" rx="8" />
+          <rect x="10" y="242" width="70" height="16" rx="8" /><rect x="420" y="242" width="70" height="16" rx="8" />
+          <rect x="242" y="10" width="16" height="70" rx="8" transform="rotate(30 250 250)" />
+          <rect x="242" y="10" width="16" height="70" rx="8" transform="rotate(60 250 250)" />
+          <rect x="242" y="10" width="16" height="70" rx="8" transform="rotate(120 250 250)" />
+          <rect x="242" y="10" width="16" height="70" rx="8" transform="rotate(150 250 250)" />
+          <rect x="242" y="10" width="16" height="70" rx="8" transform="rotate(210 250 250)" />
+          <rect x="242" y="10" width="16" height="70" rx="8" transform="rotate(240 250 250)" />
+          <rect x="242" y="10" width="16" height="70" rx="8" transform="rotate(300 250 250)" />
+          <rect x="242" y="10" width="16" height="70" rx="8" transform="rotate(330 250 250)" />
+        </g>
+      </svg>
+      <div id="slogan-core"></div>
+    </div>
+    <div id="slogan-copy" class="clip" data-start="0" data-duration="3">
+      <div class="slogan-line" id="slogan-l1">Жонга <span id="slogan-gold">шифо</span></div>
+      <div class="slogan-line" id="slogan-l2">ҳам оро</div>
+    </div>
+    <div id="slogan-iris" class="clip" data-start="2.6" data-duration="0.4" data-layout-ignore><div id="slogan-iris-in" style="position:absolute;inset:0;background:#ffffff"></div></div>
+  </div>
+  <script>
+    // split the slogan into letters (deterministic, once at load)
+    document.querySelectorAll("#slogan-copy .slogan-line, #slogan-gold").forEach((el) => {
+      el.childNodes.forEach((n) => {
+        if (n.nodeType !== 3) return;
+        const frag = document.createDocumentFragment();
+        [...n.textContent].forEach((c) => {
+          const s = document.createElement("span");
+          s.className = "ch";
+          s.textContent = c === " " ? " " : c;
+          frag.appendChild(s);
+        });
+        n.replaceWith(frag);
+      });
+    });
+    const tl = gsap.timeline({ paused: true });
+    // the sun rises out of the blue flood
+    tl.fromTo("#slogan-sun", { y: 520, scale: 0.5, opacity: 0 }, { y: 0, scale: 1, opacity: 1, duration: 0.7, ease: "expo.out" }, 0.05);
+    tl.fromTo("#slogan-rays-g", { rotation: 0, svgOrigin: "250 250" }, { rotation: 75, svgOrigin: "250 250", duration: 3, ease: "none" }, 0);
+    tl.fromTo("#slogan-rays", { scale: 0.4 }, { scale: 1, duration: 0.6, ease: "back.out(1.6)" }, 0.25);
+    // the slogan, letter by letter
+    tl.fromTo("#slogan-copy .ch", { opacity: 0.0, filter: "blur(6px)", y: 0 },
+      { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power3.out", stagger: 0.045 }, 0.45);
+    // iris opens from the sun onto the end card
+    tl.fromTo("#slogan-iris-in", { clipPath: "circle(0px at 540px 580px)" },
+      { clipPath: "circle(2300px at 540px 580px)", duration: 0.36, ease: "power3.in" }, 2.62);
+    window.__timelines["slogan"] = tl;
+  </script>
+</template>
