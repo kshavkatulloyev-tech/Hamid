@@ -1,0 +1,73 @@
+<template>
+  <style>
+    #root {
+      position: absolute;
+      inset: 0;
+      font-family: "Montserrat", sans-serif;
+    }
+    .cap {
+      position: absolute;
+      left: 40px;
+      right: 40px;
+      top: 912px;
+      display: flex;
+      justify-content: center;
+    }
+    .cap-box {
+      padding: 14px 30px;
+      border-radius: 24px;
+      background: rgba(15, 36, 55, 0.86);
+      color: #fff;
+      font-size: 44px;
+      line-height: 1.18;
+      font-weight: 800;
+      text-align: center;
+    }
+    .cap-box span {
+      color: #ffffff;
+    }
+  </style>
+  <!--
+    Ёзувлар (субтитрлар). Ҳар бир қатор: data-start / data-duration — сониялар,
+    бу файлнинг бошидан (асосий видеода 3.6 с дан бошланади).
+    Ўз видеонгизга мослаш учун матн ва вақтларни ўзгартиринг.
+  -->
+  <div id="root" data-composition-id="captions" data-width="1080" data-height="1920">
+    <div id="cap1" class="cap clip" data-start="0.2" data-duration="2.8" data-track-index="0">
+      <div class="cap-box"><span>Бел</span> <span>оғриғининг</span> <span>асосий</span> <span>сабаби</span></div>
+    </div>
+    <div id="cap2" class="cap clip" data-start="3.0" data-duration="3.0" data-track-index="0">
+      <div class="cap-box"><span>узоқ</span> <span>вақт</span> <span>қимирламай</span> <span>ўтириш.</span></div>
+    </div>
+    <div id="cap3" class="cap clip" data-start="6.0" data-duration="2.8" data-track-index="0">
+      <div class="cap-box"><span>Биринчи:</span> <span>ҳар</span> <span>соатда</span> <span>юринг.</span></div>
+    </div>
+    <div id="cap4" class="cap clip" data-start="8.8" data-duration="2.8" data-track-index="0">
+      <div class="cap-box"><span>Иккинчи:</span> <span>белни</span> <span>тўғри</span> <span>тутинг.</span></div>
+    </div>
+    <div id="cap5" class="cap clip" data-start="11.6" data-duration="3.6" data-track-index="0">
+      <div class="cap-box"><span>Учинчи:</span> <span>мушакларни</span> <span>чўзинг.</span></div>
+    </div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    const groups = [
+      ["#cap1", 0.2, 2.8],
+      ["#cap2", 3.0, 3.0],
+      ["#cap3", 6.0, 2.8],
+      ["#cap4", 8.8, 2.8],
+      ["#cap5", 11.6, 3.6],
+    ];
+    groups.forEach(([sel, start, dur]) => {
+      tl.fromTo(sel + " .cap-box", { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, ease: "power2.out" }, start);
+      const words = document.querySelectorAll(sel + " .cap-box span");
+      const step = (dur - 0.6) / words.length;
+      words.forEach((w, i) => {
+        // the spoken word turns gold, then settles back to white
+        tl.fromTo(w, { color: "#ffffff" }, { color: "#F2B705", duration: 0.12 }, start + 0.1 + i * step);
+        tl.to(w, { color: "#ffffff", duration: 0.2 }, start + 0.1 + (i + 1) * step);
+      });
+    });
+    window.__timelines["captions"] = tl;
+  </script>
+</template>

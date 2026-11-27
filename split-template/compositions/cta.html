@@ -1,0 +1,139 @@
+<template>
+  <style>
+    #root {
+      position: absolute;
+      inset: 0;
+      font-family: "Montserrat", sans-serif;
+      color: #fff;
+    }
+    #cta-bg {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(160deg, #1565c0 0%, #1b7fa3 50%, #2e9e5b 100%);
+    }
+    #cta-inner {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 300px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+    #cta-badge {
+      width: 300px;
+      height: 300px;
+    }
+    #cta-rays {
+      transform-origin: 150px 150px;
+    }
+    #cta-name {
+      margin-top: 34px;
+      font-size: 84px;
+      line-height: 1.05;
+      font-weight: 900;
+    }
+    #cta-sub {
+      margin-top: 10px;
+      font-size: 34px;
+      font-weight: 700;
+      letter-spacing: 6px;
+      color: #d8f0e2;
+    }
+    #cta-slogan {
+      margin-top: 28px;
+      font-size: 46px;
+      font-weight: 600;
+      font-style: italic;
+      color: #ffe48a;
+    }
+    #cta-btn {
+      margin-top: 50px;
+      padding: 30px 56px;
+      border-radius: 70px;
+      background: #f2b705;
+      color: #0f2437;
+    }
+    #cta-btn-label {
+      font-size: 36px;
+      font-weight: 700;
+    }
+    #cta-phone {
+      margin-top: 4px;
+      font-size: 60px;
+      font-weight: 900;
+    }
+    #cta-addr {
+      margin-top: 44px;
+      font-size: 36px;
+      font-weight: 600;
+    }
+    #cta-tg {
+      margin-top: 14px;
+      font-size: 34px;
+      font-weight: 600;
+      color: #d8f0e2;
+    }
+  </style>
+  <div
+    id="root"
+    data-composition-id="cta"
+    data-width="1080"
+    data-height="1920"
+    data-composition-variables='[
+      {"id":"brand","type":"string","label":"Клиника номи","default":"Ҳабибулло Шамс"},
+      {"id":"slogan","type":"string","label":"Шиор","default":"«Жонга шифо ҳам оро»"},
+      {"id":"callLabel","type":"string","label":"Чақирув","default":"Қабулга ёзилинг"},
+      {"id":"phone","type":"string","label":"Телефон","default":"+998 93 963 10 95"},
+      {"id":"address","type":"string","label":"Манзил","default":"Вобкент, Зиё кўчаси"},
+      {"id":"telegram","type":"string","label":"Телеграм","default":"Telegram: @HabibulloShams"}
+    ]'
+  >
+    <div id="cta-clip" class="clip" data-start="0" data-duration="5" data-track-index="0">
+      <div id="cta-bg"></div>
+      <div id="cta-inner">
+        <!-- Логотип ўрнига: assets/ га логотипингизни қўйиб, шу SVG ни <img src="assets/logo.png"> билан алмаштиринг -->
+        <svg id="cta-badge" viewBox="0 0 300 300">
+          <circle cx="150" cy="150" r="146" fill="#ffffff" />
+          <g id="cta-rays" stroke="#f2b705" stroke-width="12" stroke-linecap="round">
+            <line x1="150" y1="30" x2="150" y2="62" />
+            <line x1="150" y1="238" x2="150" y2="270" />
+            <line x1="30" y1="150" x2="62" y2="150" />
+            <line x1="238" y1="150" x2="270" y2="150" />
+            <line x1="65" y1="65" x2="88" y2="88" />
+            <line x1="212" y1="212" x2="235" y2="235" />
+            <line x1="235" y1="65" x2="212" y2="88" />
+            <line x1="88" y1="212" x2="65" y2="235" />
+          </g>
+          <circle cx="150" cy="150" r="70" fill="#f2b705" />
+          <path d="M112 168 C130 120 170 120 188 168" fill="none" stroke="#2e9e5b" stroke-width="12" stroke-linecap="round" />
+          <circle cx="150" cy="122" r="14" fill="#1565c0" />
+        </svg>
+        <div id="cta-name" data-var-text="brand">Ҳабибулло Шамс</div>
+        <div id="cta-sub">ФИЗИОТЕРАПИЯ</div>
+        <div id="cta-slogan" data-var-text="slogan">«Жонга шифо ҳам оро»</div>
+        <div id="cta-btn">
+          <div id="cta-btn-label" data-var-text="callLabel">Қабулга ёзилинг</div>
+          <div id="cta-phone" data-var-text="phone">+998 93 963 10 95</div>
+        </div>
+        <div id="cta-addr" data-var-text="address">Вобкент, Зиё кўчаси</div>
+        <div id="cta-tg" data-var-text="telegram">Telegram: @HabibulloShams</div>
+      </div>
+    </div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#cta-bg", { y: 1920 }, { y: 0, duration: 0.7, ease: "power3.inOut" }, 0);
+    tl.fromTo("#cta-badge", { scale: 0.6, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.6, ease: "back.out(1.8)" }, 0.5);
+    tl.fromTo("#cta-rays", { opacity: 0 }, { opacity: 1, duration: 0.6 }, 0.8);
+    tl.fromTo("#cta-name", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 0.8);
+    tl.fromTo("#cta-sub", { opacity: 0 }, { opacity: 1, duration: 0.5 }, 1.0);
+    tl.fromTo("#cta-slogan", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 1.2);
+    tl.fromTo("#cta-btn", { opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(2)" }, 1.6);
+    tl.to("#cta-btn", { scale: 1.05, duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 3 }, 2.4);
+    tl.fromTo("#cta-addr", { opacity: 0 }, { opacity: 1, duration: 0.5 }, 2.0);
+    tl.fromTo("#cta-tg", { opacity: 0 }, { opacity: 1, duration: 0.5 }, 2.2);
+    window.__timelines["cta"] = tl;
+  </script>
+</template>

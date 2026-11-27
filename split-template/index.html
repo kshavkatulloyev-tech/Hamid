@@ -1,0 +1,172 @@
+<!doctype html>
+<html
+  lang="uz"
+  data-composition-variables='[
+    {"id":"presenter","type":"string","label":"Сизнинг видеонгиз (файл)","default":"assets/presenter.mp4"},
+    {"id":"blue","type":"color","label":"Кўк","default":"#1565C0"},
+    {"id":"green","type":"color","label":"Яшил","default":"#2E9E5B"},
+    {"id":"gold","type":"color","label":"Олтин","default":"#F2B705"}
+  ]'
+>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+    <style>
+      :root {
+        --blue: #1565c0;
+        --green: #2e9e5b;
+        --gold: #f2b705;
+        --ink: #0f2437;
+        --font-display: "Montserrat", sans-serif;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+        background: #0f2437;
+      }
+      #root {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        font-family: var(--font-display);
+        overflow: hidden;
+      }
+      /* Presenter: full frame in the hook, bottom half during the split */
+      #cam {
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        overflow: hidden;
+        clip-path: inset(0px 0px 0px 0px);
+      }
+      #cam-shift {
+        position: absolute;
+        inset: 0;
+      }
+      #presenter {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      #hook,
+      #split,
+      #captions,
+      #cta {
+        position: absolute;
+        inset: 0;
+      }
+      #hook {
+        z-index: 3;
+      }
+      #split {
+        z-index: 2;
+      }
+      #captions {
+        z-index: 4;
+      }
+      #cta {
+        z-index: 5;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="24"
+      data-width="1080"
+      data-height="1920"
+    >
+      <div id="cam">
+        <div id="cam-shift">
+          <video
+            id="presenter"
+            class="clip"
+            data-start="0"
+            data-duration="24"
+            data-track-index="0"
+            data-has-audio="true"
+            data-var-src="presenter"
+            src="assets/presenter.mp4"
+            playsinline
+          ></video>
+        </div>
+      </div>
+
+      <div
+        id="hook"
+        data-composition-id="hook"
+        data-composition-src="compositions/hook.html"
+        data-start="0"
+        data-duration="3.6"
+        data-track-index="1"
+        data-track-kind="graphics"
+        data-width="1080"
+        data-height="1920"
+      ></div>
+
+      <div
+        id="split"
+        data-composition-id="split"
+        data-composition-src="compositions/split.html"
+        data-start="3"
+        data-duration="16.6"
+        data-track-index="2"
+        data-track-kind="graphics"
+        data-width="1080"
+        data-height="1920"
+      ></div>
+
+      <div
+        id="captions"
+        data-composition-id="captions"
+        data-composition-src="compositions/captions.html"
+        data-start="3.6"
+        data-duration="15.4"
+        data-track-index="3"
+        data-track-kind="captions"
+        data-width="1080"
+        data-height="1920"
+      ></div>
+
+      <div
+        id="cta"
+        data-composition-id="cta"
+        data-composition-src="compositions/cta.html"
+        data-start="19"
+        data-duration="5"
+        data-track-index="1"
+        data-track-kind="graphics"
+        data-width="1080"
+        data-height="1920"
+      ></div>
+    </div>
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      // Hook → split: the camera folds into the bottom half, face moves down with it
+      tl.fromTo(
+        "#cam",
+        { clipPath: "inset(0px 0px 0px 0px)" },
+        { clipPath: "inset(960px 0px 0px 0px)", duration: 0.8, ease: "power3.inOut" },
+        3.0,
+      );
+      tl.fromTo("#cam-shift", { y: 0 }, { y: 430, duration: 0.8, ease: "power3.inOut" }, 3.0);
+      // Split → CTA: camera opens back to full frame under the CTA card
+      tl.to("#cam", { clipPath: "inset(0px 0px 0px 0px)", duration: 0.7, ease: "power3.inOut" }, 19.0);
+      tl.to("#cam-shift", { y: 0, duration: 0.7, ease: "power3.inOut" }, 19.0);
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>
